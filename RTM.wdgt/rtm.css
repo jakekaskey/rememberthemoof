@@ -1,0 +1,62 @@
+body {
+	margin: 0;
+	padding: 0;
+	width: 900px;
+	height: 700px;
+}
+
+#mainWrapper {
+	background: url('rtm_logo.png') no-repeat top left #ffffff fixed;
+	width: 100%;
+	height: 100%;
+	margin:0;
+	padding: 0;
+}
+
+#needToAuth {
+	display: none;
+}
+
+#front {
+	display: block;
+	background-color: ##f7f7f7;
+}
+
+#back {
+	display:none;
+	background-color: #9cf;
+}
+
+.containers {
+	width: 100%;
+	height: 100%;
+}
+
+.section {
+	border-right: 1px solid #0f0;
+	width: 849px;
+	padding-left: 50px;
+	margin: 0;
+	float: left;
+	clear: left;
+}
+
+.error {
+	color: #b00;
+}
+
+#itemTemplate {
+	display: none;
+}
+
+#evenMore {
+	padding: 20px;
+	background-color: #dfd;
+}
+#methodDisp {
+	margin: 10px 10px 10px 0;
+	padding: 5px;
+	border: 1px solid #999;
+	font-size: 9pt;
+	font-family: Courier, Monaco, monospace;
+}

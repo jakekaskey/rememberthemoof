@@ -1,0 +1,60 @@
+<html>
+
+<head>
+<style>
+@import "rtm.css";
+</style>
+
+<script type="text/javascript" src="jquery-1.2.1.js" />
+<!-- the following is only necessary if the RTM shared key is in the javascript -->
+<!-- script type="text/javascript" src="md5.js" / -->
+<script type='text/javascript' src='/System/Library/WidgetResources/AppleClasses/AppleGlassButton.js' charset='utf-8'/>
+<script type="text/javascript" src="rtm.js" />
+</head>
+
+<body>
+
+<div id="mainWrapper">
+	<div id="front">
+		<div class="section">
+			debug <input type="checkbox" id="debugChk" checked="1" />
+			<div id="evenMore">
+				<p>This is some other stuff, just to test things.</p>
+			</div>
+		</div>
+		<div class="section" id="needToAuth">
+			<a href=".">Click here</a> to authorize this app with your RTM account.
+		</div>
+		<div class="section">
+			<div id="taskpane">
+				<span id="listid"></span>
+				<ul id="taskList">
+				</ul>
+			</div>
+		</div>
+		<div class="section">
+			<input type="submit" value="go here" id="showprefsbtn" />
+		</div>
+	</div>
+
+	<div id="back">
+		<div class="section">
+			<h3>This is the back</h3>
+		</div>
+		<div class="section">
+			<input type="submit" value="Deauthorize"  id="clearAuthBtn" />
+			<input type="submit" value="go back!!" id="hideprefsbtn" />
+		</div>
+		<div class="section">
+			<h2>Methods</h2>
+			<input type="text" size="50" id="methodName"></input>&nbsp; : &nbsp;<input type="submit" value="Get Method Info" id="methodInfoBtn"></input><br/>
+			<div id="methodDisp"></div>
+		</div>
+	</div>
+</div>
+
+<li id="itemTemplate"><input type="checkbox" class="task_chk" name="" /><span class="title">title</span><span class="due"></span></li>
+
+</body>
+
+</html>
