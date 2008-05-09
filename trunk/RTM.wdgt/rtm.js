@@ -63,7 +63,7 @@ var markTaskDone = function (e) {
 
 	log(args.task_id + " marked done");
 
-	populateTasks(true);
+	window.setTimeout(populateTasks, 100);
 };
 
 /*
@@ -85,21 +85,20 @@ var rtmTimeline = function () {
 
 /*
 method to fill out the task list
+
+NOTE: this *sorely* needs refactoring...
 */
 var populateTasks = function (killearly) {
 	log("populating tasks");
-	var list_id;
-	try {
-		list_id = gCurrentList;
-		log("list_id: " + String(list_id));
-	} catch(e) {
-		log ("<span class='error'>Whoops!  couldn't get list_id!</span>");
-		return;
-	}
+	var list_id = gCurrentList;
+	log("list_id: " + String(list_id));
+
 	$("#taskList").empty();
-	var args = (list_id != null && !isNaN(list_id) && Number(list_id) > 0) ? {list_id: String(list_id)} : null;
-	//if(typeof(killearly) != "undefined" && killearly == true) return;
-	var tasks = rtmCall("rtm.tasks.getList", args, true);
+	if(typeof(killearly) != "undefined" && killearly == true) return;
+	
+	var arguments = null;//{list_id: String(list_id)};
+	//var arguments = (typeof(list_id) != "undefined" && !isNaN(list_id) && Number(list_id) > 0) ? {list_id: String(list_id)} : null;
+	var tasks = rtmCall("rtm.tasks.getList", arguments, true);
 
 	if(tasks.stat == "failure" || $(tasks.data).children("rsp").children("tasks").length < 1)
 		return;
@@ -110,18 +109,6 @@ var populateTasks = function (killearly) {
 	*/
 	$("#taskList").empty();
 
-	/*
-	now repopulate
-	
-	for(var list in tasks) {
-		for(var taskseries in list) {
-			for (var el in taskseries) {
-				if(task == "task") {
-					addTaskToList(taskseries.name, list.id, taskseries.id, task.id, task.due);
-				}
-			}
-		}
-	}*/
 	var lists = $(tasks).children("rsp").children("tasks").children("list").get(); //.children("taskseries").filter("task:first").get();
 	var cur_list;
 	var ts_list;
@@ -441,6 +428,8 @@ var rtmAjax = function (url, data, asXML) {
 	if(typeof(data) != "object") return "Need a data object";
 	if(typeof(data.method) == "undefined") return "Need a method name";
 
+	show_waiting(true);
+
 	data.api_key = gRTMAPIKey;
 	data.format = (asXML == true) ? "rest" : "json";
 	if(gRTMAuthToken != null && gRTMAuthToken.length > 0) data.auth_token = gRTMAuthToken;
@@ -454,6 +443,7 @@ var rtmAjax = function (url, data, asXML) {
 		}
 	});
 
+	show_waiting(false);
 	return (asXML == true) ? retVal.responseXML : retVal.responseText;
 };
 
@@ -549,6 +539,10 @@ var openAuthUrl = function (e) {
 	} else {
 		log("would've opened this url: " + authUrl);
 	}
+};
+
+var show_waiting = function (show) {
+	document.getElementById("waitIcon").style.display = (show == true) ? "block" : "none";
 };
 
 
