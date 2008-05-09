@@ -102,3 +102,9 @@ task list
 	width: 10%;
 	color: #aaa;
 }
+
+#waitIcon {
+	float: right;
+	clear: both;
+	display: none;
+}
