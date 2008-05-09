@@ -90,19 +90,21 @@ NOTE: this *sorely* needs refactoring...
 */
 var populateTasks = function (killearly) {
 	log("populating tasks");
+
 	var list_id = gCurrentList;
 	log("list_id: " + String(list_id));
 
-	$("#taskList").empty();
-	if(typeof(killearly) != "undefined" && killearly == true) return;
-	
-	var arguments = null;//{list_id: String(list_id)};
-	//var arguments = (typeof(list_id) != "undefined" && !isNaN(list_id) && Number(list_id) > 0) ? {list_id: String(list_id)} : null;
+	var arguments = {};
+	if(isNaN(list_id) == false && Number(list_id) > 0)
+		arguments.list_id = String(list_id);
+
 	var tasks = rtmCall("rtm.tasks.getList", arguments, true);
 
 	if(tasks.stat == "failure" || $(tasks.data).children("rsp").children("tasks").length < 1)
 		return;
 	tasks = tasks.data;
+	//if(typeof(killearly) != "undefined" && killearly == true) return;
+	
 
 	/*
 	first, clean up list
@@ -115,15 +117,14 @@ var populateTasks = function (killearly) {
 	var cur_ts;
 	var cur_task;
 	var task_list = [];
-	var list_id;
+	var cur_list_id;
 	var task_obj;
 	var task;
-	var i = j = 0;
+	log("======================\nparsing lists:");
 	for(var l in lists) {	
 		cur_list = $(lists[l]);
-		log("starting through list " + i);
-		list_id = cur_list.attr("id");
-		log("list_id " + list_id);
+		cur_list_id = cur_list.attr("id");
+		log("parsing cur_list_id " + cur_list_id);
 		ts_list = cur_list.children("taskseries").get();
 		for(var ts_ind in ts_list) {
 			cur_ts = $(ts_list[ts_ind]);
@@ -132,18 +133,15 @@ var populateTasks = function (killearly) {
 			if(typeof(cur_task.attr("completed")) == "undefined" && typeof(cur_task.attr("delete")) == "undefined") {
 				log("valid task '" + cur_ts.attr("name") + "'");
 				task_obj = {
-					list_id: list_id,
+					list_id: cur_list_id,
 					name: cur_ts.attr("name"),
 					ts_id: cur_ts.attr("id"),
 					task_id: cur_task.attr("id"),
 					due: (typeof(cur_task.attr("due")) == "undefined") ? "" : cur_task.attr("due")
 				};
 				task_list.push(task_obj);
-				log("added element " + j);
-				j+= 1;
 			}
 		}
-		i += 1;
 	}
 
 	$.each(task_list, addTaskToList);
@@ -276,7 +274,7 @@ this method automatically fills in:
 var rtmCall = function (methName, args, xml) { 
 	var ajaxArgs = (args == null) ? {} : args;
 	var asXML = (typeof(xml) == "undefined") ? false : true;
-
+	
 	/*
 	first check token status
 
