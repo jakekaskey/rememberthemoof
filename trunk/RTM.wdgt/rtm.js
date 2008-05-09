@@ -1,7 +1,23 @@
+/*
+Remember The Moof
+Copyright 2008 Malcolm McFarland
+
+A Mac OS X Dashboard interface to Remember the Milk
+(http://www.rememberthemilk.com/)
+
+This code is released under both the MIT and GPL licenses.
+*/
+
+/*
+this stuff is for when I start snazzing this up apple-style
+*/
 var gShowBtn;
 var gHideBtn;
 var gClearAuthBtn;
-/*  USE ME IF YOU WANT
+/*  
+use me if you want to experiment locally, but be sure to uncomment the related code
+elsewhere
+
 var gRTMShared = ""; 
 */
 var gRTMAPIKey = "87b748d22dca6a95a2674048ea627c76";
@@ -35,30 +51,34 @@ var markTaskDone = function (e) {
 		timeline: rtmTimeline()
 	};
 	log("marking " + attrs[3] + " as complete");
-	return;
+	for (var i in args) log(i + ": " + args[i]);
 
 	var res = rtmCall("rtm.tasks.complete", args);
+	log("task marking response: " + res.data);
+
 	if(res.stat == "failure") {
-		log("failed marking " + $(e.target).attr("name").split("_")[1] + " done");
+		log("failed marking task_id " + args.task_id + " done");
 		return;
 	}
 
-	log("marking done " + $(e.target).attr("name").split("_")[1]);
-	populateTasks();
+	log(args.task_id + " marked done");
+	return;
+
+	populateTasks(true);
 };
 
 /*
 singleton for generating a timeline id
 */
 var rtmTimeline = function () {
-	if(gRTMTimelineId < 0) {
+	if(gRTMTimelineId < 0 || isNaN(gRTMTimelineId)) {
 		var res = rtmCall("rtm.timelines.create", null);
 
 		if(res.stat == "failure")
 			log("couldn't get timeline: " + res.data);
 		res = eval(res.data);
 
-		gRTMTimelineId = Number(res.timeline);
+		gRTMTimelineId = Number(res.rsp.timeline);
 	}
 
 	return String(gRTMTimelineId);
@@ -67,7 +87,7 @@ var rtmTimeline = function () {
 /*
 method to fill out the task list
 */
-var populateTasks = function () {
+var populateTasks = function (killearly) {
 	log("populating tasks");
 	try {
 		var list_id = gCurrentList;
@@ -77,7 +97,8 @@ var populateTasks = function () {
 		return;
 	}
 	$("#taskList").empty();
-	var args = (list_id != null && list_id > 0) ? {list_id: String(list_id)} : null;
+	var args = (list_id != null && !isNaN(list_id) && Number(list_id) > 0) ? {list_id: String(list_id)} : null;
+	if(typeof(killearly) != "undefined" && killearly == true) return;
 	var tasks = rtmCall("rtm.tasks.getList", args, true);
 
 	if(tasks.stat == "failure" || $(tasks.data).children("rsp").children("tasks").length < 1)
@@ -101,16 +122,57 @@ var populateTasks = function () {
 			}
 		}
 	}*/
-	$(tasks).children("rsp").children("tasks").children("list").children("taskseries").filter("task:first [completed]").each(addTaskToList);
+	var lists = $(tasks).children("rsp").children("tasks").children("list").get(); //.children("taskseries").filter("task:first").get();
+	var cur_list;
+	var ts_list;
+	var cur_ts;
+	var cur_task;
+	var task_list = [];
+	var list_id;
+	var task_obj;
+	var task;
+	var i = j = 0;
+	for(var l in lists) {	
+		cur_list = $(lists[l]);
+		log("starting through list " + i);
+		list_id = cur_list.attr("id");
+		log("list_id " + list_id);
+		ts_list = cur_list.children("taskseries").get();
+		for(var ts_ind in ts_list) {
+			cur_ts = $(ts_list[ts_ind]);
+			log("looking at taskseries " + cur_ts.attr("name"));
+			cur_task = cur_ts.children("task:first");
+			if(typeof(cur_task.attr("completed")) == "undefined" && typeof(cur_task.attr("delete")) == "undefined") {
+				log("valid task '" + cur_ts.attr("name") + "'");
+				task_obj = {
+					list_id: list_id,
+					name: cur_ts.attr("name"),
+					ts_id: cur_ts.attr("id"),
+					task_id: cur_task.attr("id"),
+					due: (typeof(cur_task.attr("due")) == "undefined") ? "" : cur_task.attr("due")
+				};
+				task_list.push(task_obj);
+				log("added element " + j);
+				j+= 1;
+			}
+		}
+		i += 1;
+	}
 
+	$.each(task_list, addTaskToList);
 //	$("#listid").html(tasks.list.id);
 };
 
 /*
 creates a list item for a task, called mainly from populateTasks()
 */
-var addTaskToList = function(i) { //name, list_id, taskseries_id, task_id, due) {
-	var task = $(this).children("task:first");
+var addTaskToList = function() {  // this == {list_id, name, ts_id, task_id, due}
+	var list_id = String(this.list_id);
+	var taskseries_id = String(this.ts_id);
+	var task_id = String(this.task_id);
+	var name = String(this.name);
+	var due = String(this.due);
+	/*var task = $(this).children("task:first");
 	if(typeof(task.attr("completed")) != "undefined" || typeof(task.attr("deleted")) != "undefined")
 		return;
 	var name = $(this).attr("name");
@@ -121,17 +183,15 @@ var addTaskToList = function(i) { //name, list_id, taskseries_id, task_id, due) 
 	var task_id = task.attr("id");
 	//log("task id: " + task_id);
 	var due = task.attr("due");
-	if(typeof(due) == "undefined") due = "";
 	//log("task due: " + due);
-
-	var list_id = 0; // for debugging <<--  $("lists").attr("objects")[$("lists").attr("selectedIndex")].id.split("_")[1];
+	*/
 	var newItem = $("#itemTemplate").clone();
 
 	//log("filling in newItem values");
-	newItem.children(".title:first").html(String(name));
-	newItem.children(".due:first").html(String(due));
-	newItem.children(".task_chk:first").attr("name", "taskchk_" + String(list_id) + "_" + String(taskseries_id) + "_" + String(task_id));
-	newItem.children(".task_chk:first").attr("id", "taskchk_" + String(list_id) + "_" + String(taskseries_id) + "_" + String(task_id));
+	newItem.children(".title:first").html(name);
+	newItem.children(".due:first").html(due);
+	newItem.children(".task_chk:first").attr("name", "taskchk_" + list_id + "_" + taskseries_id + "_" + task_id);
+	newItem.children(".task_chk:first").attr("id", "taskchk_" + list_id + "_" + taskseries_id + "_" + task_id);
 	newItem.children(".task_chk:first").change(markTaskDone);
 	//log("appending newItem");
 	$("#taskList").append(newItem);
@@ -139,7 +199,7 @@ var addTaskToList = function(i) { //name, list_id, taskseries_id, task_id, due) 
 
 	newItem.show();
 	
-	log("appended item " + String(name) + ", due " + String(due) + " with id " + String(task_id));
+	log("appended item " + name + ", due " + due + " with id " + task_id);
 };
 
 var populateLists = function () {
