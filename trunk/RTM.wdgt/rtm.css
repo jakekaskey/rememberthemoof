@@ -52,6 +52,7 @@ body {
 #evenMore {
 	padding: 20px;
 	background-color: #dfd;
+	width: 100%;
 }
 #methodDisp {
 	margin: 10px 10px 10px 0;
@@ -59,4 +60,34 @@ body {
 	border: 1px solid #999;
 	font-size: 9pt;
 	font-family: Courier, Monaco, monospace;
+}
+#listStorage {
+	display: none;
+}
+
+/*
+task list
+*/
+#taskList {
+	border: 1px dotted #00f;
+	padding: 0;
+}
+#taskList li {
+	padding: 5px;
+	margin: 0;
+}
+#taskList li * {
+	border: 1px solid #f00;
+}
+#taskList li .task_chk {
+}
+#taskList li .title {
+	display: inline
+	width: 50%;
+}
+
+#taskList li .due {
+	display: inline;
+	width: 10%;
+	color: #aaa;
 }
