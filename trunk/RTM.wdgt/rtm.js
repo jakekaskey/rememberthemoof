@@ -62,7 +62,6 @@ var markTaskDone = function (e) {
 	}
 
 	log(args.task_id + " marked done");
-	return;
 
 	populateTasks(true);
 };
@@ -89,8 +88,9 @@ method to fill out the task list
 */
 var populateTasks = function (killearly) {
 	log("populating tasks");
+	var list_id;
 	try {
-		var list_id = gCurrentList;
+		list_id = gCurrentList;
 		log("list_id: " + String(list_id));
 	} catch(e) {
 		log ("<span class='error'>Whoops!  couldn't get list_id!</span>");
@@ -98,7 +98,7 @@ var populateTasks = function (killearly) {
 	}
 	$("#taskList").empty();
 	var args = (list_id != null && !isNaN(list_id) && Number(list_id) > 0) ? {list_id: String(list_id)} : null;
-	if(typeof(killearly) != "undefined" && killearly == true) return;
+	//if(typeof(killearly) != "undefined" && killearly == true) return;
 	var tasks = rtmCall("rtm.tasks.getList", args, true);
 
 	if(tasks.stat == "failure" || $(tasks.data).children("rsp").children("tasks").length < 1)
