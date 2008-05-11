@@ -1,6 +1,7 @@
 /*
 Remember The Moof
 Copyright 2008 Malcolm McFarland
+http://code.google.com/p/rememberthemoof/
 
 A Mac OS X Dashboard interface to Remember the Milk
 (http://www.rememberthemilk.com/)
@@ -11,10 +12,15 @@ This code is released under both the MIT and GPL licenses.
 
 body {
 	font-family: arial,helvetica,sans-serif;
+	font-size: 10pt;
 	margin: 0;
 	padding: 0;
 	width: 900px;
 	height: 700px;
+}
+
+h1, h2, h3 {
+	margin: 0;
 }
 
 #mainWrapper {
@@ -23,10 +29,6 @@ body {
 	height: 100%;
 	margin:0;
 	padding: 0;
-}
-
-#needToAuth {
-	display: none;
 }
 
 #front {
@@ -77,31 +79,46 @@ body {
 	display: none;
 }
 
+#taskpane {
+	border: 1px dotted #00f;
+}
+
+/*#taskpane h3 {
+	margin: 0;
+}*/
+
 /*
 task list
 */
 #taskList {
-	border: 1px dotted #00f;
 	padding: 0;
+	list-style: none;
+	margin: 0;
 }
 #taskList li {
 	padding: 5px;
 	margin: 0;
+	clear: left;
 }
 #taskList li * {
-	border: 1px solid #f00;
+	/*border: 1px solid #f00;*/
 }
 #taskList li .task_chk {
+	float: left;
+	margin: 0 4px 0 0;
 }
 #taskList li .title {
-	display: inline
+	float: left;
 	width: 50%;
+	overflow: hidden;
 }
 
 #taskList li .due {
-	display: inline;
-	width: 10%;
+	float: right;
+	overflow: hidden;
+	width: 25%;
 	color: #aaa;
+	text-align: right;
 }
 
 #waitIcon {
@@ -111,9 +128,11 @@ task list
 }
 
 #addTask {
-	display: none;
 }
 
 #undoPane {
+}
+
+.hideOnLoad {
 	display: none;
 }

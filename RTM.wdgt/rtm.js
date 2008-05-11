@@ -1,6 +1,7 @@
 /*
 Remember The Moof
 Copyright 2008 Malcolm McFarland
+http://code.google.com/p/rememberthemoof/
 
 A Mac OS X Dashboard interface to Remember the Milk
 (http://www.rememberthemilk.com/)
@@ -29,6 +30,10 @@ var gRTMTimelineId = -1;
 var gLastTransId = "0";
 var gCurrentList = 0;
 
+/*
+Hey, *here's* something for i18n!
+*/
+var gMonths = ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
 
 var showPrefs = function () { 
 	$("#front").hide();
@@ -142,13 +147,14 @@ var populateTasks = function (killearly) {
 					name: cur_ts.attr("name"),
 					ts_id: cur_ts.attr("id"),
 					task_id: cur_task.attr("id"),
-					due: (typeof(cur_task.attr("due")) == "undefined") ? "" : cur_task.attr("due")
+					due: parseRTMDate(cur_task.attr("due"), (cur_task.attr("has_due_time") == "1"))
 				};
 				task_list.push(task_obj);
 			}
 		}
 	}
 
+	$("#taskSection").show();
 	$.each(task_list, addTaskToList);
 //	$("#listid").html(tasks.list.id);
 };
@@ -157,25 +163,13 @@ var populateTasks = function (killearly) {
 creates a list item for a task, called mainly from populateTasks()
 */
 var addTaskToList = function() {  // this == {list_id, name, ts_id, task_id, due}
+	var newItem = $("#itemTemplate").clone();
+
 	var list_id = String(this.list_id);
 	var taskseries_id = String(this.ts_id);
 	var task_id = String(this.task_id);
-	var name = String(this.name);
+	var name = String(this.name).replace("&", "&amp;", "g").replace("<", "&lt;", "g").replace(">", "&gt;", "g");
 	var due = String(this.due);
-	/*var task = $(this).children("task:first");
-	if(typeof(task.attr("completed")) != "undefined" || typeof(task.attr("deleted")) != "undefined")
-		return;
-	var name = $(this).attr("name");
-	log("adding task item " + String(i) + " for task " + name);
-	//log("task name: " + name);
-	var taskseries_id = $(this).attr("id");
-	//log("taskseries id: " + taskseries_id);
-	var task_id = task.attr("id");
-	//log("task id: " + task_id);
-	var due = task.attr("due");
-	//log("task due: " + due);
-	*/
-	var newItem = $("#itemTemplate").clone();
 
 	//log("filling in newItem values");
 	newItem.children(".title:first").html(name);
@@ -209,6 +203,9 @@ var populateLists = function () {
 	gCurrentList = Number($("#lists").get(0).options[$("#lists").get(0).selectedIndex].id.split("_")[1]);
 
 	lists.children("lists").children("list").each(addListItem);
+
+	$("#showNewTaskPane").attr("disabled", false);
+	$("#listsSection").show();
 	//addListItem(lists[l].id, lists[l].name);
 };
 
@@ -365,8 +362,6 @@ var rtmGetFrob = function () {
 	need a new frob
 	*/
 	var frobArgs = {method: "rtm.auth.getFrob", api_key: gRTMAPIKey, format: "json"};
-	rtmSign(frobArgs);
-	
 	var frobRet = eval(rtmAjax(gRTMMethUrl, frobArgs));
 	log("frob from server: " + frobRet.rsp.frob);
 
@@ -432,7 +427,7 @@ var rtmAjax = function (url, data, asXML) {
 	if(typeof(data.method) == "undefined") return "Need a method name";
 
 	show_waiting(true);
-//	$("#undoPane").hide();
+//	$("#undoSection").hide();
 
 	data.api_key = gRTMAPIKey;
 	data.format = (asXML == true) ? "rest" : "json";
@@ -552,7 +547,7 @@ var addNewTask = function (e) {
 var prepUndo = function(id) {
 	gLastTransId = id;
 
-	$("#undoPane").show();
+	$("#undoSection").show();
 };
 
 var doUndo = function(e) {
@@ -564,7 +559,7 @@ var doUndo = function(e) {
 	};
 		
 	var res = rtmCall("rtm.transactions.undo", args);
-	$("#undoPane").hide();
+	$("#undoSection").hide();
 
 	window.setTimeout(populateTasks, 100);
 
@@ -631,6 +626,55 @@ var log = function(s) {
 	$("#evenMore").html($("#evenMore").html() + "\n" + String(s));
 };
 
+var parseRTMDate = function(d, has_due_time) {
+	if (typeof(d) == "undefined" || d == "undefined" || d == "") return "";
+
+	var time = String(d.split("T")[1]).replace("Z", "");
+	var date = d.split("T")[0];
+	var new_date = new Date(date.split("-")[0],
+				Number(date.split("-")[1]) - 1,
+				date.split("-")[2],
+				time.split(":")[0],
+				time.split(":")[1],
+				time.split(":")[2]);
+	var now_date = new Date();
+
+	var date_str;
+	/*} else if((new_date.getYear() == now_date.getYear() &&
+				new_date.getMonth() == now_date.getMonth() &&
+				new_date.getDay() == now_date.getDay() - 1) ||
+			(new_date.getYear() == now_date.getYear() &&
+				new_date.getMonth() == now_date.getMonth() - 1 &&
+				new_date.getDay() == 0)) {
+		date_str = "Yesterday";*/
+	if(new_date.getYear() == now_date.getYear() &&
+			new_date.getMonth() == now_date.getMonth() &&
+			new_date.getDay() == now_date.getDay()
+			) {
+		date_str = "Today";
+	} else if((new_date.getYear() == now_date.getYear() &&
+				new_date.getMonth() == now_date.getMonth() &&
+				new_date.getDay() == now_date.getDay() + 1) ||
+			(new_date.getYear() == now_date.getYear() &&
+				new_date.getMonth() == now_date.getMonth() + 1 &&
+				new_date.getDay() == 1)) {
+		date_str = "Tomorrow";
+	} else {
+		date_str = String(new_date.getDate()) + " " + gMonths[new_date.getMonth()] + " " + String(new_date.getFullYear());
+	}
+
+	if(has_due_time) {
+		var minutes = (new_date.getMinutes() < 10) ? "0" + String(new_date.getMinutes()) : String(new_date.getMinutes());
+		var hours = new_date.getHours() - (new_date.getTimezoneOffset()/60);
+		
+		hours = (hours < 10) ? "0" + String(hours) : String(hours);
+
+		date_str += " at " + hours + minutes;
+	}
+
+	return date_str;
+};
+
 var openAuthUrl = function (e) {
 	var authUrl = gRTMAuthUrl + "?";
 	var frobStr = rtmGetFrob();
@@ -692,6 +736,7 @@ var setup = function () {
 	$("#newTaskName").keyup(updateNewTaskPane);
 
 	if(!window.widget) {
+		$(".hideOnLoad").show();
 		buildFront();
 	}
 	
