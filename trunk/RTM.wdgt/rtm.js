@@ -389,8 +389,6 @@ var rtmAuth = function () {
 		return false;
 	
 	var args = {method:"rtm.auth.getToken", api_key:gRTMAPIKey, frob:rtmGetFrob(), format: "json"};
-	rtmSign(args);
-
 	var ret = rtmAjax(gRTMMethUrl, args);
 	log("getToken response: " + ret);
 
@@ -412,7 +410,7 @@ var rtmAuth = function () {
 		widget.setPreferenceForKey(gRTMAuthToken, "authtoken");
 		widget.setPreferenceForKey(gRTMUserId, "userid");
 		widget.setPreferenceForKey(ret.auth.user.username, "username");
-		widget.setPreferenceForKey(ret.auht.user.fullname, "fullname");
+		widget.setPreferenceForKey(ret.auth.user.fullname, "fullname");
 		widget.setPreferenceForKey(ret.auth.perms, "perms");
 	}
 	
@@ -751,19 +749,8 @@ $(setup);
 /*
 testing functions, ignore
 */
-var testLogin = function () {
-	var args = {
-		method: "rtm.timelines.create",
-		api_key: gRTMAPIKey
-	};
-	rtmSign(args);
-	var res = rtmAjax(gRTMMethUrl, args);
-	log("timeline res: " + res);
-};
-
 var getFrobTest = function () {
 	var frobArgs = {method: "rtm.auth.getFrob", api_key: gRTMAPIKey, format: "json"};
-	rtmSign(frobArgs);
 	
 	$("#methodDisp").html(rtmAjax(gRTMMethUrl, frobArgs));
 };
