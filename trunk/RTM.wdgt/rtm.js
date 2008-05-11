@@ -168,7 +168,7 @@ var addTaskToList = function() {  // this == {list_id, name, ts_id, task_id, due
 	var list_id = String(this.list_id);
 	var taskseries_id = String(this.ts_id);
 	var task_id = String(this.task_id);
-	var name = String(this.name).replace("&", "&amp;", "g").replace("<", "&lt;", "g").replace(">", "&gt;", "g");
+	var name = String(this.name).replace("<", "&lt;", "g").replace(">", "&gt;", "g");
 	var due = String(this.due);
 
 	//log("filling in newItem values");
@@ -637,6 +637,11 @@ var parseRTMDate = function(d, has_due_time) {
 				time.split(":")[2]);
 	var now_date = new Date();
 
+	/* 
+	timezone compensation upfront; javascript automatically rolls back date, month, year
+	*/
+	new_date.setHours(new_date.getHours() - (new_date.getTimezoneOffset()/60));
+
 	var date_str;
 	/*} else if((new_date.getYear() == now_date.getYear() &&
 				new_date.getMonth() == now_date.getMonth() &&
@@ -663,9 +668,9 @@ var parseRTMDate = function(d, has_due_time) {
 
 	if(has_due_time) {
 		var minutes = (new_date.getMinutes() < 10) ? "0" + String(new_date.getMinutes()) : String(new_date.getMinutes());
-		var hours = new_date.getHours() - (new_date.getTimezoneOffset()/60);
-		
-		hours = (hours < 10) ? "0" + String(hours) : String(hours);
+		var hours = (new_date.getHours() < 10) ? "0" + String(new_date.getHours()) : String(new_date.getHours());
+		/*if(hours < 0)
+			hours += 24;*/
 
 		date_str += " at " + hours + minutes;
 	}
