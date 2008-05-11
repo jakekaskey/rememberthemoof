@@ -108,3 +108,7 @@ task list
 	clear: both;
 	display: none;
 }
+
+#addTask {
+	display: none;
+}
