@@ -461,6 +461,82 @@ var clearAuthTokens = function (e) {
 	return false;
 };
 
+var setupNewTaskPane = function (e) {
+	$("#newTaskName").val("");
+	$("#newTaskDueDate").val("");
+	$("#newTaskList").empty();
+
+	var new_lists = $("#lists").clone().get(0);
+	new_lists.id =  "newTaskList_list";
+	
+	/*
+	TESTING: filter out lists that aren't real (i.e., "All")
+	*/
+	log(new_lists.options.length + " items to check");
+	for(var l in new_lists.options) {
+		if(typeof(new_lists.options[l]) != "object") {
+			log("strange; type is " + typeof(new_lists.options[l]) + " with a value of " + new_lists.options[l]);
+			continue;
+		}
+		log("checking list item: " + new_lists.options[l].id);
+		if(Number(new_lists.options[l].id.split("_")[1]) < 1) {
+			var rem_opt = new_lists.removeChild(new_lists.options[l]);
+			log("removed item: " + rem_opt.id);
+		}
+	}
+
+	log("resulting new_lists size: " + new_lists.options.length);
+	if(new_lists.options.length < 1)
+		new_lists.disabled = true;
+
+	$("#newTaskList").append(new_lists);
+
+	$("#newTaskSubmit").attr("disabled", true);
+
+	$("#addTask").show();
+
+	return false;
+};
+
+var hideNewTaskPane = function (e) {
+	$("#addTask").hide();
+
+	return false;
+};
+
+var updateNewTaskPane = function (e) {
+	if($("#newTaskName").val().length > 0)
+		$("#newTaskSubmit").attr("disabled", false);
+	else
+		$("#newTaskSubmit").attr("disabled", true);
+		
+	return false;
+};
+
+var addNewTask = function (e) {
+	log("new task name: " + $("#newTaskName").val());
+
+	var args = {name: $("#newTaskName").val(), timeline: rtmTimeline()};
+	if($("#newTaskDueDate").val().length > 0) {
+		args.name = args.name + " " + $("#newTaskDueDate").val();
+		args.parse = "1";
+	}
+	var sel_list_id = $("#newTaskList_list").get(0).options[$("#newTaskList_list").get(0).selectedIndex].id.split("_")[1];
+	if(Number(sel_list_id) > 0) {
+		args.list_id = String(sel_list_id);
+	}
+	
+	/*
+	args.name = String(args.name).replace(/[?<>&;:@=]/, function(s) { return escape(s); }); 
+	args.name = String(args.name).replace("/", "%2F", "g");
+	args.name = String(args.name).replace(">", "%3E", "g");
+	*/
+	rtmCall("rtm.tasks.add", args);
+
+	hideNewTaskPane();
+	window.setTimeout(populateTasks, 100);
+};
+
 /*
 method arguments signing function
 */
@@ -573,6 +649,11 @@ var setup = function () {
 	$("#getnewfrob").click(getFrobTest);
 	$("#debugChk").click(toggleDebugDisplay);
 	$("#lists").change(loadNewList);
+
+	$("#showNewTaskPane").click(setupNewTaskPane);
+	$("#newTaskCancel").click(hideNewTaskPane);
+	$("#newTaskSubmit").click(addNewTask);
+	$("#newTaskName").keyup(updateNewTaskPane);
 
 	if(!window.widget) {
 		buildFront();

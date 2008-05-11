@@ -33,6 +33,15 @@
 			<a href=".">Click here</a> to authorize this app with your RTM account.
 		</div>
 		<div class="section">
+			<input type="submit" id="showNewTaskPane" value="Add task" />
+			<div  id="addTask">
+				Add to: <span id="newTaskList"></span><br/>
+				Name: <input type="text" id="newTaskName" /><br/>
+				Due: <input type="text" id="newTaskDueDate" /><br/>
+				<input type="submit" id="newTaskCancel" value="Never mind"/>&nbsp;&nbsp;<input type="submit" id="newTaskSubmit" value="Add task" disabled="true" />
+			</div>
+		</div>
+		<div class="section">
 			<div id="taskpane">
 				<h3 style="border; 1px solid #0f0;">Tasks</h3>
 				<ul id="taskList">
