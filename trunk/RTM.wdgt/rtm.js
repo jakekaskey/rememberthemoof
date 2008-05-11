@@ -26,6 +26,7 @@ var gRTMMethUrl = "http://api.rememberthemilk.com/services/rest/";
 var gRTMAuthToken;
 var gRTMUserId;
 var gRTMTimelineId = -1;
+var gLastTransId = "0";
 var gCurrentList = 0;
 
 
@@ -61,6 +62,10 @@ var markTaskDone = function (e) {
 		return;
 	}
 
+	res = eval(res.data);
+	if (res.rsp.transaction.undoable == "1") {
+		prepUndo(res.rsp.transaction.id);
+	}
 	log(args.task_id + " marked done");
 
 	window.setTimeout(populateTasks, 100);
@@ -120,18 +125,18 @@ var populateTasks = function (killearly) {
 	var cur_list_id;
 	var task_obj;
 	var task;
-	log("======================\nparsing lists:");
+	// log("======================\nparsing lists:");
 	for(var l in lists) {	
 		cur_list = $(lists[l]);
 		cur_list_id = cur_list.attr("id");
-		log("parsing cur_list_id " + cur_list_id);
+		// log("parsing cur_list_id " + cur_list_id);
 		ts_list = cur_list.children("taskseries").get();
 		for(var ts_ind in ts_list) {
 			cur_ts = $(ts_list[ts_ind]);
-			log("looking at taskseries " + cur_ts.attr("name"));
+			// log("looking at taskseries " + cur_ts.attr("name"));
 			cur_task = cur_ts.children("task:first");
 			if(typeof(cur_task.attr("completed")) == "undefined" && typeof(cur_task.attr("delete")) == "undefined") {
-				log("valid task '" + cur_ts.attr("name") + "'");
+				// log("valid task '" + cur_ts.attr("name") + "'");
 				task_obj = {
 					list_id: cur_list_id,
 					name: cur_ts.attr("name"),
@@ -427,6 +432,7 @@ var rtmAjax = function (url, data, asXML) {
 	if(typeof(data.method) == "undefined") return "Need a method name";
 
 	show_waiting(true);
+//	$("#undoPane").hide();
 
 	data.api_key = gRTMAPIKey;
 	data.format = (asXML == true) ? "rest" : "json";
@@ -461,6 +467,9 @@ var clearAuthTokens = function (e) {
 	return false;
 };
 
+/*
+this is for showing and setting up the Add Task panel
+*/
 var setupNewTaskPane = function (e) {
 	$("#newTaskName").val("");
 	$("#newTaskDueDate").val("");
@@ -473,7 +482,8 @@ var setupNewTaskPane = function (e) {
 	TESTING: filter out lists that aren't real (i.e., "All")
 	*/
 	log(new_lists.options.length + " items to check");
-	for(var l in new_lists.options) {
+	for(var l = 0; l < new_lists.options.length; l++) {
+		log("l == " + l);
 		if(typeof(new_lists.options[l]) != "object") {
 			log("strange; type is " + typeof(new_lists.options[l]) + " with a value of " + new_lists.options[l]);
 			continue;
@@ -494,12 +504,14 @@ var setupNewTaskPane = function (e) {
 	$("#newTaskSubmit").attr("disabled", true);
 
 	$("#addTask").show();
+	$("#showNewTaskPane").attr("disabled", true);
 
 	return false;
 };
 
 var hideNewTaskPane = function (e) {
 	$("#addTask").hide();
+	$("#showNewTaskPane").attr("disabled", false);
 
 	return false;
 };
@@ -536,6 +548,29 @@ var addNewTask = function (e) {
 	hideNewTaskPane();
 	window.setTimeout(populateTasks, 100);
 };
+
+var prepUndo = function(id) {
+	gLastTransId = id;
+
+	$("#undoPane").show();
+};
+
+var doUndo = function(e) {
+	if(Number(gLastTransId) < 1)
+		return;
+	var args = {
+		transaction_id: String(gLastTransId),
+		timeline: rtmTimeline()
+	};
+		
+	var res = rtmCall("rtm.transactions.undo", args);
+	$("#undoPane").hide();
+
+	window.setTimeout(populateTasks, 100);
+
+	return false;
+};
+
 
 /*
 method arguments signing function
@@ -649,6 +684,7 @@ var setup = function () {
 	$("#getnewfrob").click(getFrobTest);
 	$("#debugChk").click(toggleDebugDisplay);
 	$("#lists").change(loadNewList);
+	$("#undoBtn").click(doUndo);
 
 	$("#showNewTaskPane").click(setupNewTaskPane);
 	$("#newTaskCancel").click(hideNewTaskPane);
