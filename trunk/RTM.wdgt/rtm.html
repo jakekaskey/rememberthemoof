@@ -26,28 +26,31 @@
 			</textarea>
 			<div id="waitIcon"><img src="./ajax-loader.gif" /></div>
 		</div>
-		<div class="section" id="listsSection">
+		<div class="section hideOnLoad" id="listsSection">
 			<span class="label">List:</span> <select id="lists"></select>
 		</div>
-		<div class="section" id="needToAuth">
+		<div class="section hideOnLoad" id="needToAuth">
 			<a href=".">Click here</a> to authorize this app with your RTM account.
 		</div>
-		<div class="section" id="undoPane">
+		<div class="section hideOnLoad" id="undoSection">
 			<input type="submit" value="undo" id="undoBtn" />
 		</div>
-		<div class="section">
-			<input type="submit" id="showNewTaskPane" value="Add task" />
-			<div  id="addTask">
+		<div class="section" id="addTaskSection">
+			<input type="submit" id="showNewTaskPane" value="Add task" disabled="true" />
+			<div id="addTask" class="hideOnLoad">
 				Add to: <span id="newTaskList"></span><br/>
 				Name: <input type="text" id="newTaskName" /><br/>
 				Due: <input type="text" id="newTaskDueDate" /><br/>
 				<input type="submit" id="newTaskCancel" value="Never mind"/>&nbsp;&nbsp;<input type="submit" id="newTaskSubmit" value="Add task" disabled="true" />
 			</div>
 		</div>
-		<div class="section">
+		<div class="section hideOnLoad" id="taskSection">
 			<div id="taskpane">
-				<h3 style="border; 1px solid #0f0;">Tasks</h3>
+				<h3>Tasks</h3>
 				<ul id="taskList">
+<li><input type="checkbox" class="task_chk" name="" /><span class="title">sample task 1</span><span class="due">thisisareallylongbutplausibledate</span><div style="clear: both;"></div></li>
+<li><input type="checkbox" class="task_chk" name="" /><span class="title">sample task 2</span><span class="due">due shorter</span><div style="clear: both;"></div></li>
+				
 				</ul>
 			</div>
 		</div>
@@ -73,7 +76,7 @@
 	</div>
 </div>
 
-<li id="itemTemplate"><input type="checkbox" class="task_chk" name="" /><span class="title">title</span><span class="due"></span></li>
+<li id="itemTemplate"><input type="checkbox" class="task_chk" name="" /><span class="title">title</span><span class="due"></span><div style="clear: both;"></div></li>
 
 </body>
 
