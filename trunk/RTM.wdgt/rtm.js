@@ -166,6 +166,8 @@ var populateTasks = function (killearly) {
 	}
 
 	$("#taskSection").show();
+
+	task_list.reverse(); // RTM sends us most recent first, we want the opposite
 	$.each(task_list, addTaskToList);
 //	$("#listid").html(tasks.list.id);
 };
@@ -504,6 +506,8 @@ var setupNewTaskPane = function (e) {
 		if(Number(new_lists.options[l].id.split("_")[1]) < 1) {
 			var rem_opt = new_lists.removeChild(new_lists.options[l]);
 			log("removed item: " + rem_opt.id);
+		} else if(Number(new_lists.options[l].id.split("_")[1]) == gCurrentList) {
+			new_lists.selectedIndex = l;
 		}
 	}
 
