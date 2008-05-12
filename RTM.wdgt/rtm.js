@@ -204,7 +204,9 @@ var populateLists = function () {
 
 	lists.children("lists").children("list").each(addListItem);
 
-	$("#showNewTaskPane").attr("disabled", false);
+	linkManip($("#showNewTaskPane"), true);
+	$("#showNewTaskPane").click(setupNewTaskPane);
+
 	$("#listsSection").show();
 	//addListItem(lists[l].id, lists[l].name);
 };
@@ -496,15 +498,19 @@ var setupNewTaskPane = function (e) {
 
 	$("#newTaskSubmit").attr("disabled", true);
 
-	$("#addTask").show();
+	$("#addTask").css("top", $("#showNewTaskPane").offset().top + $("#showNewTaskPane").get(0).offsetHeight);
+	$("#addTask").slideDown(100);
 	$("#showNewTaskPane").attr("disabled", true);
+	linkManip($("#showNewTaskPane"), false);
 
 	return false;
 };
 
 var hideNewTaskPane = function (e) {
-	$("#addTask").hide();
-	$("#showNewTaskPane").attr("disabled", false);
+	//$("#addTask").hide();
+	$("#addTask").slideUp(100);
+	linkManip($("#showNewTaskPane"), true);
+	$("#showNewTaskPane").click(setupNewTaskPane);
 
 	return false;
 };
@@ -613,14 +619,21 @@ var rtmSign = function (args) {
 misc utility functions
 *********/
 var toggleDebugDisplay = function (e) {
-	var displayAttr = ($("#debugChk").attr("value") == "on") ? "block" : "none";
-
-	$("#evenMore").css("display", displayAttr);
+	if($("#debugChk").attr("value") == "on") {
+		$("#evenMore").show();
+		log = oldlog;
+		log("debug dialog showing");
+	} else {
+		$("#evenMore").hide();
+		log("debug dialog hidden");
+		log = function(s) { return; };
+	}
 
 	return false;
 };
 
-var log = function(s) {
+var log = function(s) { };   // this will be swapped out, depending on if the debugChk is set
+var oldlog = function(s) {
 	$("#evenMore").html($("#evenMore").html() + "\n" + String(s));
 };
 
@@ -643,13 +656,6 @@ var parseRTMDate = function(d, has_due_time) {
 	new_date.setHours(new_date.getHours() - (new_date.getTimezoneOffset()/60));
 
 	var date_str;
-	/*} else if((new_date.getYear() == now_date.getYear() &&
-				new_date.getMonth() == now_date.getMonth() &&
-				new_date.getDay() == now_date.getDay() - 1) ||
-			(new_date.getYear() == now_date.getYear() &&
-				new_date.getMonth() == now_date.getMonth() - 1 &&
-				new_date.getDay() == 0)) {
-		date_str = "Yesterday";*/
 	if(new_date.getYear() == now_date.getYear() &&
 			new_date.getMonth() == now_date.getMonth() &&
 			new_date.getDay() == now_date.getDay()
@@ -701,6 +707,22 @@ var show_waiting = function (show) {
 	document.getElementById("waitIcon").style.display = (show == true) ? "block" : "none";
 };
 
+/*
+for gratuitous using of <a href> tags as functional units, shame on me
+
+	<span .. >link text</span>  <<==>>  <span .. ><a href=".">link text</span>
+*/
+var linkManip  = function (el, makeLink) {
+	if(makeLink) {
+		var new_anchor = document.createElement("a");
+		$(new_anchor).attr("href", ".");
+		$(el).wrapInner(new_anchor);
+	} else {
+		var innards = $(el).children("a").html();
+		$(el).html(innards);
+	}
+};
+
 
 /*******
 main setup function
@@ -733,7 +755,6 @@ var setup = function () {
 	$("#lists").change(loadNewList);
 	$("#undoBtn").click(doUndo);
 
-	$("#showNewTaskPane").click(setupNewTaskPane);
 	$("#newTaskCancel").click(hideNewTaskPane);
 	$("#newTaskSubmit").click(addNewTask);
 	$("#newTaskName").keyup(updateNewTaskPane);

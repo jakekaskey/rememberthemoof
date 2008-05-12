@@ -21,13 +21,11 @@
 <div id="mainWrapper">
 	<div id="front">
 		<div class="section">
-			debug <input type="checkbox" id="debugChk" checked="true" />
 			<textarea rows="10" id="evenMore">
 			</textarea>
 			<div id="waitIcon"><img src="./ajax-loader.gif" /></div>
 		</div>
 		<div class="section hideOnLoad" id="listsSection">
-			<span class="label">List:</span> <select id="lists"></select>
 		</div>
 		<div class="section hideOnLoad" id="needToAuth">
 			<a href=".">Click here</a> to authorize this app with your RTM account.
@@ -36,32 +34,38 @@
 			<input type="submit" value="undo" id="undoBtn" />
 		</div>
 		<div class="section" id="addTaskSection">
-			<input type="submit" id="showNewTaskPane" value="Add task" disabled="true" />
-			<div id="addTask" class="hideOnLoad">
-				Add to: <span id="newTaskList"></span><br/>
-				Name: <input type="text" id="newTaskName" /><br/>
-				Due: <input type="text" id="newTaskDueDate" /><br/>
-				<input type="submit" id="newTaskCancel" value="Never mind"/>&nbsp;&nbsp;<input type="submit" id="newTaskSubmit" value="Add task" disabled="true" />
-			</div>
 		</div>
 		<div class="section hideOnLoad" id="taskSection">
 			<div id="taskpane">
-				<h3>Tasks</h3>
+				<span class="left"><h3>Tasks</h3></span><span class="right linkAsBtn" id="showNewTaskPane">Add task</span>
+				<div style="clear: both;"></div>
+				<div id="listSection" class="left"><span>List:</span> <select id="lists"></select></div>
 				<ul id="taskList">
-<li><input type="checkbox" class="task_chk" name="" /><span class="title">sample task 1</span><span class="due">thisisareallylongbutplausibledate</span><div style="clear: both;"></div></li>
-<li><input type="checkbox" class="task_chk" name="" /><span class="title">sample task 2</span><span class="due">due shorter</span><div style="clear: both;"></div></li>
+<li><input type="checkbox" class="task_chk" name="" /><span class="title">ssample task 1 sample task 1 sample task 1 sample task 1 sample task 1 ample task 1 </span><span class="due">thisisareallylongbutplausibledate</span><div style="clear: both;"></div></li>
+<li><input type="checkbox" class="task_chk" name="" /><span class="title">sample task 2</span><span class="due">14 jun 2008 at 1232</span><div style="clear: both;"></div></li>
 				
 				</ul>
 			</div>
 		</div>
-		<div class="section">
+		<div class="section" class="right">
 			<input type="submit" value="go here" id="showprefsbtn" />
+		</div>
+
+		<!-- independently floated -->
+		<div id="addTask" class="hideOnLoad">
+			Add to: <span id="newTaskList"></span><br/>
+			Name: <input type="text" id="newTaskName" /><br/>
+			Due: <input type="text" id="newTaskDueDate" /><br/>
+			<input type="submit" id="newTaskCancel" value="Never mind"/>&nbsp;&nbsp;<input type="submit" id="newTaskSubmit" value="Add task" disabled="true" />
 		</div>
 	</div>
 
 	<div id="back">
 		<div class="section">
 			<h3>This is the back</h3>
+		</div>
+		<div class="section">
+			show debug <input type="checkbox" id="debugChk" />
 		</div>
 		<div class="section">
 			<input type="submit" value="Deauthorize"  id="clearAuthBtn" />
