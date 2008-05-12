@@ -64,6 +64,8 @@ var markTaskDone = function (e) {
 		task_id: attrs[3],
 		timeline: rtmTimeline()
 	};
+
+	e.target.disabled = true;
 	log("marking " + attrs[3] + " as complete");
 	for (var i in args) log(i + ": " + args[i]);
 
@@ -72,6 +74,7 @@ var markTaskDone = function (e) {
 
 	if(res.stat == "failure") {
 		log("failed marking task_id " + args.task_id + " done");
+		e.target.disabled = false;
 		return;
 	}
 
