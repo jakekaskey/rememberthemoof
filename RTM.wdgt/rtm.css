@@ -146,6 +146,10 @@ task list
 
 #undoPane {
 	display: none;
+	font-size: 9pt;
+	margin-left: 10px;
+	padding: 2px 4px;
+	background-color: #fad164;
 }
 
 #addTask {
