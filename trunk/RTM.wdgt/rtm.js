@@ -12,9 +12,8 @@ This code is released under both the MIT and GPL licenses.
 /*
 this stuff is for when I start snazzing this up apple-style
 */
-var gShowBtn;
-var gHideBtn;
-var gClearAuthBtn;
+var gInfoBtn;
+
 /*  
 use me if you want to experiment locally, but be sure to uncomment the related code
 elsewhere
@@ -36,14 +35,23 @@ Hey, *here's* something for i18n!
 var gMonths = ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
 
 var showPrefs = function () { 
+	if(window.widget)
+		widget.prepareForTransition("ToBack");
 	$("#front").hide();
 	$("#back").show();
+
+	if(window.widget)
+		setTimeout('widget.performTransition();', 0);
 
 	return false;
 };
 var hidePrefs = function () {
+	if(window.widget)
+		widget.prepareForTransition("ToFront");
 	$("#back").hide();
 	$("#front").show();
+	if(window.widget)
+		setTimeout('widget.performTransition();', 0);
 
 	return false;
 };
@@ -701,6 +709,16 @@ var openAuthUrl = function (e) {
 	} else {
 		log("would've opened this url: " + authUrl);
 	}
+
+	return false;
+};
+
+var goToRTM = function(e) {
+	if(window.widget) {
+		widget.openURL("http://www.rememberthemilk.com/");
+	}
+
+	return false;
 };
 
 var show_waiting = function (show) {
@@ -729,8 +747,7 @@ main setup function
 ********/
 var setup = function () {
 	log("entering setup");
-	$("#showprefsbtn").click(showPrefs);
-	$("#hideprefsbtn").click(hidePrefs);
+
 	$.ajaxSetup({
 		async:false,
 		type:"GET",
@@ -745,8 +762,19 @@ var setup = function () {
 			gRTMAuthToken = widget.preferenceForKey("authtoken");
 			log("retrieved authtoken: " + gRTMAuthToken);
 		}
-		//gClearAuthBtn = new AppleGlassButton ($("#clearAuthBtn"), "Deauthorize this widgeroo", clearAuthTokens);
+
+		/*
+		apple-gooey setup here
+		*/
+		//gInfoBtn = new AppleInfoButton(document.getElementById("showprefsbtn"), document.getElementById("infowrapper"), "white", "white", showPrefs);
 	}
+	
+	/*
+	connect all of the events
+	*/
+	$("#showprefsbtn").click(showPrefs);
+	$("#hideprefsbtn").click(hidePrefs);
+	$("#goToRTM").click(goToRTM);
 	
 	$("#clearAuthBtn").click(clearAuthTokens);
 	$("#methodInfoBtn").click(getMethodInfo);
@@ -763,6 +791,8 @@ var setup = function () {
 		$(".hideOnLoad").show();
 		buildFront();
 	}
+
+	$("#showprefsbtn").show();
 	
 	log("setup done");
 	//testLogin();
@@ -778,5 +808,5 @@ testing functions, ignore
 var getFrobTest = function () {
 	var frobArgs = {method: "rtm.auth.getFrob", api_key: gRTMAPIKey, format: "json"};
 	
-	$("#methodDisp").html(rtmAjax(gRTMMethUrl, frobArgs));
+	$("#methodDisp").html(String(rtmAjax(gRTMMethUrl, frobArgs)).replace("<", "&lt;","g").replace(">", "&gt;","g"));
 };
