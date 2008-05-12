@@ -12,7 +12,9 @@
 <script type="text/javascript" src="jquery-1.2.1.js" />
 <!-- the following is only necessary if the RTM shared key is in the javascript -->
 <!-- script type="text/javascript" src="md5.js" / -->
-<script type='text/javascript' src='/System/Library/WidgetResources/AppleClasses/AppleGlassButton.js' charset='utf-8'/>
+<script type='text/javascript' src='/System/Library/WidgetResources/AppleClasses/AppleInfoButton.js' charset='utf-8'/>
+<script type='text/javascript' src='/System/Library/WidgetResources/AppleClasses/AppleAnimator.js' charset='utf-8'/>
+<script type='text/javascript' src='/System/Library/WidgetResources/AppleClasses/AppleButton.js' charset='utf-8'/>
 <script type="text/javascript" src="rtm.js" />
 </head>
 
@@ -23,21 +25,21 @@
 		<div class="section">
 			<textarea rows="10" id="evenMore">
 			</textarea>
-			<div id="waitIcon"><img src="./ajax-loader.gif" /></div>
 		</div>
 		<div class="section hideOnLoad" id="listsSection">
 		</div>
 		<div class="section hideOnLoad" id="needToAuth">
 			<a href=".">Click here</a> to authorize this app with your RTM account.
 		</div>
-		<div class="section hideOnLoad" id="undoSection">
-			<input type="submit" value="undo" id="undoBtn" />
-		</div>
 		<div class="section" id="addTaskSection">
 		</div>
 		<div class="section hideOnLoad" id="taskSection">
 			<div id="taskpane">
-				<span class="left"><h3>Tasks</h3></span><span class="right linkAsBtn" id="showNewTaskPane">Add task</span>
+			
+				<span class="left"><h3>Tasks</h3></span>
+				<div id="waitIcon" class="left"><img src="./ajax-loader.gif" /></div>
+				<div id="undoPane" class="left"><input type="submit" value="undo" id="undoBtn" /></div>
+				<span class="right linkAsBtn" id="showNewTaskPane">Add task</span>
 				<div style="clear: both;"></div>
 				<div id="listSection" class="left"><span>List:</span> <select id="lists"></select></div>
 				<ul id="taskList">
@@ -47,8 +49,8 @@
 				</ul>
 			</div>
 		</div>
-		<div class="section" class="right">
-			<input type="submit" value="go here" id="showprefsbtn" />
+		<div class="section">
+			<span class="right"><input type="submit" value="back" id="showprefsbtn" /></span>
 		</div>
 
 		<!-- independently floated -->
@@ -58,6 +60,7 @@
 			Due: <input type="text" id="newTaskDueDate" /><br/>
 			<input type="submit" id="newTaskCancel" value="Never mind"/>&nbsp;&nbsp;<input type="submit" id="newTaskSubmit" value="Add task" disabled="true" />
 		</div>
+		<div style="clear: both;"></div>
 	</div>
 
 	<div id="back">
@@ -69,14 +72,21 @@
 		</div>
 		<div class="section">
 			<input type="submit" value="Deauthorize"  id="clearAuthBtn" />
-			<input type="submit" value="go back!!" id="hideprefsbtn" />
 			<input type="submit" value="get new frob" id="getnewfrob" />
 		</div>
 		<div class="section">
-			<h2>Methods</h2>
+			<h2>Methods lookup</h2>
 			<input type="text" size="50" id="methodName"></input>&nbsp; : &nbsp;<input type="submit" value="Get Method Info" id="methodInfoBtn"></input><br/>
-			<div id="methodDisp"></div>
+			<div id="methodDisp" rows="10"></div>
 		</div>
+		<div class="section">
+			...and our lovely benefactor:<br/>
+			<a href="" id="goToRTM">http://www.rememberthemilk.com/</a>
+		</div>
+		<div class="section">
+			<span class="right"><input type="submit" value="front" id="hideprefsbtn" /></span>
+		</div>
+		<div style="clear: both;"></div>
 	</div>
 </div>
 
