@@ -196,6 +196,7 @@ var addTaskToList = function() {  // this == {list_id, name, ts_id, task_id, due
 
 var populateLists = function () {
 	log("populating lists popup");
+	//gCurrentList = Number($("#lists").get(0).options[$("#lists").get(0).selectedIndex].id.split("_")[1]);
 	$("#lists").empty();
 
 	addListItem(-1, {name: "All", id: "-1"});
@@ -208,10 +209,15 @@ var populateLists = function () {
 
 	log("initial list: " + String(gCurrentList));
 
-	gCurrentList = Number($("#lists").get(0).options[$("#lists").get(0).selectedIndex].id.split("_")[1]);
 
 	lists.children("lists").children("list").each(addListItem);
 
+	for(var i = 0; i < $("#lists").get(0).options.length; i++) {
+		log("checking list " + $("#lists").get(0).options[i].id);
+		if(Number($("#lists").get(0).options[i].id.split("_")[1]) == gCurrentList)
+			$("#lists").get(0).selectedIndex = i;
+	}
+	
 	linkManip($("#showNewTaskPane"), true);
 	$("#showNewTaskPane").click(setupNewTaskPane);
 
@@ -435,7 +441,7 @@ var rtmAjax = function (url, data, asXML) {
 	if(typeof(data.method) == "undefined") return "Need a method name";
 
 	show_waiting(true);
-//	$("#undoSection").hide();
+//	$("#undoPane").hide();
 
 	data.api_key = gRTMAPIKey;
 	data.format = (asXML == true) ? "rest" : "json";
@@ -559,7 +565,7 @@ var addNewTask = function (e) {
 var prepUndo = function(id) {
 	gLastTransId = id;
 
-	$("#undoSection").show();
+	$("#undoPane").show();
 };
 
 var doUndo = function(e) {
@@ -571,7 +577,7 @@ var doUndo = function(e) {
 	};
 		
 	var res = rtmCall("rtm.transactions.undo", args);
-	$("#undoSection").hide();
+	$("#undoPane").hide();
 
 	window.setTimeout(populateTasks, 100);
 
@@ -630,7 +636,7 @@ var toggleDebugDisplay = function (e) {
 	if($("#debugChk").attr("value") == "on") {
 		$("#evenMore").show();
 		log = oldlog;
-		log("debug dialog showing");
+		log("showing debug dialog");
 	} else {
 		$("#evenMore").hide();
 		log("debug dialog hidden");
