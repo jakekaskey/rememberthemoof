@@ -179,6 +179,10 @@ task list
 	text-decoration: none;
 }
 
+.linkAsBtn .nolink {
+	display: none;
+}
+
 #leftBanner {
 	float: left;
 }
