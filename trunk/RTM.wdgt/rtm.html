@@ -22,6 +22,9 @@
 
 <div id="mainWrapper">
 	<div id="front">
+		<div class="section" id="splashSection">
+			<img id="splashPane" src="files/splash.png" />
+		</div>
 		<div class="section">
 			<textarea rows="10" id="evenMore">
 			</textarea>
@@ -35,7 +38,7 @@
 		</div>
 		<div class="section hideOnLoad" id="taskSection">
 			<div id="taskpane">
-			
+				<span class="left"><img style="height: 12pt;" src="files/rtm_logo_sm.png" /></span>
 				<span class="left"><h3>Tasks</h3></span>
 				<div id="waitIcon" class="left"><img src="./ajax-loader.gif" /></div>
 				<span id="undoPane" class="left"><a href="" id="undoBtn">undo</a></span>
@@ -65,10 +68,11 @@
 
 	<div id="back">
 		<div class="section">
-			<h3>This is the back</h3>
+			<span class="right" style="width: 30px; margin: 0;"><img src="files/moof_dark.png" /></span>
+			<span class="left"><h3>This is the back</h3></span>
 		</div>
 		<div class="section">
-			show debug <input type="checkbox" id="debugChk" />
+			<label for="debugChk">show debug</label> <input type="checkbox" id="debugChk" name="debugChk" />
 		</div>
 		<div class="section">
 			<input type="submit" value="Deauthorize"  id="clearAuthBtn" />
@@ -80,6 +84,8 @@
 			<div id="methodDisp" rows="10"></div>
 		</div>
 		<div class="section">
+			Project page:<br/>
+			<a href="" id="goToProject">http://code.google.com/p/rememberthemoof/</a><br/><br/>
 			...and our lovely benefactor:<br/>
 			<a href="" id="goToRTM">http://www.rememberthemilk.com/</a>
 		</div>

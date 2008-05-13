@@ -165,6 +165,7 @@ var populateTasks = function (killearly) {
 		}
 	}
 
+	$("#splashSection").hide();
 	$("#taskSection").show();
 
 	task_list.reverse(); // RTM sends us most recent first, we want the opposite
@@ -733,6 +734,13 @@ var goToRTM = function(e) {
 
 	return false;
 };
+var goToProject = function(e) {
+	if(window.widget) {
+		widget.openURL("http://code.google.com/p/rememberthemoof");
+	}
+
+	return false;
+};
 
 var show_waiting = function (show) {
 	document.getElementById("waitIcon").style.display = (show == true) ? "block" : "none";
@@ -745,10 +753,12 @@ for gratuitous using of <a href> tags as functional units, shame on me
 */
 var linkManip  = function (el, makeLink) {
 	if(makeLink) {
+		log("text ==> link");
 		var new_anchor = document.createElement("a");
 		$(new_anchor).attr("href", ".");
 		$(el).wrapInner(new_anchor);
 	} else {
+		log("link ==> text");
 		var innards = $(el).children("a").html();
 		$(el).html(innards);
 	}
@@ -788,6 +798,7 @@ var setup = function () {
 	$("#showprefsbtn").click(showPrefs);
 	$("#hideprefsbtn").click(hidePrefs);
 	$("#goToRTM").click(goToRTM);
+	$("#goToProject").click(goToProject);
 	
 	$("#clearAuthBtn").click(clearAuthTokens);
 	$("#methodInfoBtn").click(getMethodInfo);
