@@ -11,11 +11,11 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleDisplayName</key>
-	<string>RTM exercise</string>
+	<string>Remember the Moof</string>
 	<key>CFBundleIdentifier</key>
 	<string>com.shrugsoft.widget.rtm</string>
 	<key>CFBundleName</key>
-	<string>RTM exercise</string>
+	<string>Remember the Moof</string>
 	<key>CFBundleShortVersionString</key>
 	<string>0.1</string>
 	<key>CFBundleVersion</key>
@@ -25,8 +25,8 @@
 	<key>CloseBoxInsetY</key>
 	<integer>50</integer>
 	<key>Height</key>
-	<integer>700</integer>
+	<integer>768</integer>
 	<key>Width</key>
-	<integer>600</integer>
+	<integer>450</integer>
 </dict>
 </plist>
