@@ -165,11 +165,17 @@ var populateTasks = function (killearly) {
 		}
 	}
 
-	$("#splashSection").hide();
-	$("#taskSection").show();
 
 	task_list.reverse(); // RTM sends us most recent first, we want the opposite
 	$.each(task_list, addTaskToList);
+
+	/*
+	this only matters the first time, but it'd be *really* nice to have it in some sort of
+	chained-function capability (chain it in the setup routine)....
+	*/
+	$("#splashSection").hide();
+	$("#taskSection").show();
+	$("#showprefsbtn").show();
 //	$("#listid").html(tasks.list.id);
 };
 
@@ -224,8 +230,10 @@ var populateLists = function () {
 			$("#lists").get(0).selectedIndex = i;
 	}
 	
-	linkManip($("#showNewTaskPane"), true);
-	$("#showNewTaskPane").click(setupNewTaskPane);
+	//linkManip($("#showNewTaskPane").get(0), true);
+	//$("#showNewTaskPane").children("a:first").click(setupNewTaskPane);
+	$("#showNewTaskPane").children(".nolink:first").hide();
+	$("#showNewTaskPane").children("a:first").show();
 
 	$("#listsSection").show();
 	//addListItem(lists[l].id, lists[l].name);
@@ -522,8 +530,10 @@ var setupNewTaskPane = function (e) {
 
 	$("#addTask").css("top", $("#showNewTaskPane").offset().top + $("#showNewTaskPane").get(0).offsetHeight);
 	$("#addTask").slideDown(100);
-	$("#showNewTaskPane").attr("disabled", true);
-	linkManip($("#showNewTaskPane"), false);
+	//$("#showNewTaskPane").attr("disabled", true);
+	//linkManip($("#showNewTaskPane").get(0), false);
+	$("#showNewTaskPane").children(".nolink:first").show();
+	$("#showNewTaskPane").children("a:first").hide();
 
 	return false;
 };
@@ -531,8 +541,10 @@ var setupNewTaskPane = function (e) {
 var hideNewTaskPane = function (e) {
 	//$("#addTask").hide();
 	$("#addTask").slideUp(100);
-	linkManip($("#showNewTaskPane"), true);
-	$("#showNewTaskPane").click(setupNewTaskPane);
+	//linkManip($("#showNewTaskPane").get(0), true);
+	$("#showNewTaskPane").children(".nolink:first").hide();
+	$("#showNewTaskPane").children("a:first").show();
+	//$("#showNewTaskPane").children("a:first").click(setupNewTaskPane);
 
 	return false;
 };
@@ -754,13 +766,17 @@ for gratuitous using of <a href> tags as functional units, shame on me
 var linkManip  = function (el, makeLink) {
 	if(makeLink) {
 		log("text ==> link");
-		var new_anchor = document.createElement("a");
-		$(new_anchor).attr("href", ".");
-		$(el).wrapInner(new_anchor);
+		/*var new_anchor = document.createElement("a");
+		new_anchor.setAttribute("href", "");
+		$(el).wrapInner(new_anchor);*/
+		var new_innards = "<a href=''>" + $(el).html() + "</a>";
+		$(el).html(new_innards);
+		log("el innards: " + $(el).html());
 	} else {
 		log("link ==> text");
-		var innards = $(el).children("a").html();
-		$(el).html(innards);
+		var innards = $(el).children("a:first").text();
+		log("link innards: " + innards);
+		$(el).text(innards);
 	}
 };
 
@@ -810,13 +826,12 @@ var setup = function () {
 	$("#newTaskCancel").click(hideNewTaskPane);
 	$("#newTaskSubmit").click(addNewTask);
 	$("#newTaskName").keyup(updateNewTaskPane);
+	$("#showNewTaskPane").children("a").click(setupNewTaskPane);
 
 	if(!window.widget) {
 		$(".hideOnLoad").show();
 		buildFront();
 	}
-
-	$("#showprefsbtn").show();
 	
 	log("setup done");
 	//testLogin();
