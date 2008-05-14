@@ -28,6 +28,7 @@ var gRTMUserId;
 var gRTMTimelineId = -1;
 var gLastTransId = "0";
 var gCurrentList = 0;
+var gUndoTimerId;
 
 /*
 Hey, *here's* something for i18n!
@@ -276,6 +277,12 @@ var buildFront = function () {
 	log("building front");
 	populateLists();
 	populateTasks();
+
+	if(gUndoTimerId != null) {
+		window.clearTimeout(gUndoTimerId);
+		gUndoTimerId = null;
+	}
+	$("#undoBtn").hide();
 
 	return;
 };
@@ -586,6 +593,11 @@ var prepUndo = function(id) {
 	gLastTransId = id;
 
 	$("#undoPane").show();
+	if(gUndoTimerId != null) {
+		window.clearTimeout(gUndoTimerId);
+	}
+
+	gUndoTimerId = window.setTimeout(function() { $("#undoPane").hide(); gUndoTimerId = null; }, 30000);	
 };
 
 var doUndo = function(e) {
