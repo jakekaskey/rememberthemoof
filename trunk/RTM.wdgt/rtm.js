@@ -161,13 +161,16 @@ var populateTasks = function (killearly) {
 					task_id: cur_task.attr("id"),
 					due: parseRTMDate(cur_task.attr("due"), (cur_task.attr("has_due_time") == "1"))
 				};
-				task_list.push(task_obj);
+				task_list.push({due:cur_task.attr("due"), task:task_obj});
 			}
 		}
 	}
 
-
-	task_list.reverse(); // RTM sends us most recent first, we want the opposite
+	if(lists.length > 0) {
+		task_list.sort(rtmDueSort);
+	} else {
+		task_list.reverse(); // RTM sends us most recent first, we want the opposite
+	}
 	$.each(task_list, addTaskToList);
 
 	/*
@@ -181,16 +184,52 @@ var populateTasks = function (killearly) {
 };
 
 /*
+compare function for sorting {due:due, task:cur_task}
+*/
+var rtmDueSort = function(task1, task2) {
+	if(typeof(task1.due) == "undefined" ) {
+		if(typeof(task2.due) == "undefined") {
+			/* 
+			sort lexicographically
+			*/
+			return ((task1.task.name[0].toLowerCase() == task2.task.name[0].toLowerCase()) ? 0 :
+					((task1.task.name[0].toLowerCase() < task2.task.name[0].toLowerCase()) ? -1 : 1))
+		} else {
+			/*
+			undefined's take precedence
+			*/
+			return -1
+		}
+	} else {
+		if(typeof(task2.due) == "undefined") {
+			return 1;
+		}
+	}
+
+	/*
+	undefined's are out of the way, now actually sort the dates
+	*/
+	var task1_date = rtmNormalizeDateStr(String(task1.due));
+	var task2_date = rtmNormalizeDateStr(String(task2.due));
+	return ((task1_date.getTime() == task2_date.getTime()) ? 0 :
+			((task1_date.getTime() < task2_date.getTime()) ? -1 : 1));
+};
+/*
 creates a list item for a task, called mainly from populateTasks()
 */
-var addTaskToList = function() {  // this == {list_id, name, ts_id, task_id, due}
+var addTaskToList = function() {  // this == {due:[due, has_due_time] task:{list_id, name, ts_id, task_id, due}}
+	/*log("addtasktolist this: " + String(this));
+	for(var k in this) {
+		log("addtasktolist: this[" + k + "] == " + this[k]);
+	}*/
+	var cur_task = this.task;
 	var newItem = $("#itemTemplate").clone();
 
-	var list_id = String(this.list_id);
-	var taskseries_id = String(this.ts_id);
-	var task_id = String(this.task_id);
-	var name = String(this.name).replace("<", "&lt;", "g").replace(">", "&gt;", "g");
-	var due = String(this.due);
+	var list_id = String(cur_task.list_id);
+	var taskseries_id = String(cur_task.ts_id);
+	var task_id = String(cur_task.task_id);
+	var name = String(cur_task.name).replace("<", "&lt;", "g").replace(">", "&gt;", "g");
+	var due = String(cur_task.due);
 
 	//log("filling in newItem values");
 	newItem.children(".title:first").html(name);
@@ -683,17 +722,20 @@ var oldlog = function(s) {
 	$("#evenMore").html($("#evenMore").html() + "\n" + String(s));
 };
 
-var parseRTMDate = function(d, has_due_time) {
-	if (typeof(d) == "undefined" || d == "undefined" || d == "") return "";
-
-	var time = String(d.split("T")[1]).replace("Z", "");
-	var date = d.split("T")[0];
-	var new_date = new Date(date.split("-")[0],
+var rtmNormalizeDateStr = function (datestr) {
+	var time = String(datestr.split("T")[1]).replace("Z", "");
+	var date = datestr.split("T")[0];
+	return new Date(date.split("-")[0],
 				Number(date.split("-")[1]) - 1,
 				date.split("-")[2],
 				time.split(":")[0],
 				time.split(":")[1],
 				time.split(":")[2]);
+};
+var parseRTMDate = function(d, has_due_time) {
+	if (typeof(d) == "undefined" || d == "undefined" || d == "") return "";
+
+	var new_date = rtmNormalizeDateStr(d);
 	var now_date = new Date();
 
 	/* 
@@ -843,6 +885,7 @@ var setup = function () {
 	if(!window.widget) {
 		$(".hideOnLoad").show();
 		buildFront();
+		$("body").css("background-color", "#000044'");
 	}
 	
 	log("setup done");
