@@ -13,7 +13,7 @@ This code is released under both the MIT and GPL licenses.
 this stuff is for when I start snazzing this up apple-style
 */
 var gInfoBtn;
-
+var gDoneBtn;
 /*  
 use me if you want to experiment locally, but be sure to uncomment the related code
 elsewhere
@@ -174,7 +174,7 @@ var populateTasks = function (killearly) {
 	$.each(task_list, addTaskToList);
 
 	/*
-	this only matters the first time, but it'd be *really* nice to have it in some sort of
+	this only matters the first time, so it'd be *really* nice to have it in some sort of
 	chained-function capability (chain it in the setup routine)....
 	*/
 	$("#splashSection").hide();
@@ -363,9 +363,7 @@ var rtmCall = function (methName, args, xml) {
 		/*
 		don't have a frob, so assume we haven't tried authenticating
 		*/
-		clearAuthTokens();
-		$("#needToAuth").show();
-		$("#needToAuth a:first").click(openAuthUrl);
+		setupNewAuth();
 
 		return {stat: "failure", data: "need token"};
 	}
@@ -469,15 +467,19 @@ var rtmAuth = function () {
 	log("getToken response: " + ret);
 
 	ret = eval(ret);
-	
+
 	/*
 	just for testing:
 	*/
 	if(typeof(ret.rsp) != "undefined")
 		ret = ret.rsp;
 
-	if(typeof(ret.auth.token) == "undefined")
+	if(typeof(ret.auth) == "undefined" || typeof(ret.auth.token) == "undefined") {
+		if(typeof(ret.err.code) != "undefined" &&
+				Number(ret.err.code) == 101)
+			setupNewAuth();
 		return false;
+	}
 
 	gRTMAuthToken = ret.auth.token;
 	gRTMUserId = ret.auth.user.id;
@@ -491,6 +493,16 @@ var rtmAuth = function () {
 	}
 	
 	return true;
+};
+
+/*
+clear everything out, setup the link
+*/
+var setupNewAuth = function() {
+	clearAuthTokens();
+	$("#splashSection").hide();  // just in case
+	$("#needToAuth").show();
+	$("#needToAuth a:first").click(openAuthUrl);
 };
 
 /*
@@ -855,6 +867,7 @@ var setup = function () {
 		*/
 	}
 		gInfoBtn = new AppleInfoButton($("#infoButton").get(0), $("#front").get(0), "black", "black", showPrefs);
+		gDoneBtn = new AppleGlassButton($("#doneBtn").get(0), "back", hidePrefs);
 		// correct apple's draconian positioning
 		var info_img = $("#infoButton").children("img:first");
 		$("#infoButton").css({position: "relative", width: info_img.attr("width"), height:info_img.attr("height")}); 
@@ -863,13 +876,13 @@ var setup = function () {
 	connect all of the events
 	*/
 	//$("#showprefsbtn").click(showPrefs);
-	$("#hideprefsbtn").click(hidePrefs);
+	//$("#hideprefsbtn").click(hidePrefs);
 	$("#goToRTM").click(function(e) { genericUrlOpen("http://www.rememberthemilk.com/"); return false; } );
 	$("#goToProject").click( function(e) { genericUrlOpen("http://code.google.com/p/rememberthemoof/"); return false; } );
 	$("#goToMoof").click( function(e) { genericUrlOpen("http://www.storybytes.com/moof.html"); return false; } );
 	
 	$("#clearAuthBtn").click(clearAuthTokens);
-	$("#methodInfoBtn").click(getMethodInfo);
+	$("#methodInfoBtn").click(getMethodInfo); 
 	$("#getnewfrob").click(getFrobTest);
 	$("#debugChk").click(toggleDebugDisplay);
 	$("#lists").change(loadNewList);

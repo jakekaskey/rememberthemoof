@@ -59,6 +59,8 @@ h1, h2, h3 {
 	float: left;
 	clear: left;
 }
+.section.debug {
+}
 #front .section {
 	padding: 0;
 	width: 440px;
@@ -84,6 +86,7 @@ h1, h2, h3 {
 #splashSection {
 	margin: -5px 0 0 -5px;
 	width: 450px;
+	display: none;
 }
 
 #itemTemplate {
@@ -95,6 +98,11 @@ h1, h2, h3 {
 	background-color: #dfd;
 	width: 100%;
 	display: none;
+}
+#needToAuth {
+	text-align: center;
+	font-weight: bold;
+	margin: 8px 0;
 }
 #methodDisp {
 	margin: 10px 10px 10px 0;
@@ -198,3 +206,6 @@ task list
 #infoButton {
 	position: relative;
 }
+#doneBtn {
+}
+
