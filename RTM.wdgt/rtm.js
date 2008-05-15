@@ -34,6 +34,7 @@ var gUndoTimerId;
 Hey, *here's* something for i18n!
 */
 var gMonths = ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
+var gDays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 var showPrefs = function () { 
 	if(window.widget)
@@ -167,6 +168,7 @@ var populateTasks = function (killearly) {
 	}
 
 	if(lists.length > 0) {
+		log("more than one list at once, sorting");
 		task_list.sort(rtmDueSort);
 	} else {
 		task_list.reverse(); // RTM sends us most recent first, we want the opposite
@@ -187,6 +189,7 @@ var populateTasks = function (killearly) {
 compare function for sorting {due:due, task:cur_task}
 */
 var rtmDueSort = function(task1, task2) {
+	//log(task1.task.name + " due " + task1.due + ", " + task2.task.name + " due " + task2.due);
 	if(typeof(task1.due) == "undefined" ) {
 		if(typeof(task2.due) == "undefined") {
 			/* 
@@ -758,16 +761,19 @@ var parseRTMDate = function(d, has_due_time) {
 	var date_str;
 	if(new_date.getYear() == now_date.getYear() &&
 			new_date.getMonth() == now_date.getMonth() &&
-			new_date.getDay() == now_date.getDay()
+			new_date.getDate() == now_date.getDate()
 			) {
 		date_str = "Today";
 	} else if((new_date.getYear() == now_date.getYear() &&
 				new_date.getMonth() == now_date.getMonth() &&
-				new_date.getDay() == now_date.getDay() + 1) ||
+				new_date.getDate() == now_date.getDate() + 1) ||
 			(new_date.getYear() == now_date.getYear() &&
 				new_date.getMonth() == now_date.getMonth() + 1 &&
-				new_date.getDay() == 1)) {
+				new_date.getDate() == 1)) {
 		date_str = "Tomorrow";
+	} else if ((new_date.getTime() > now_date.getTime()) &&
+			new_date.getTime() < (now_date.getTime() + (6 * 1000 * 3600 * 24 - 1))) {
+		date_str = gDays[new_date.getDay()];
 	} else {
 		date_str = String(new_date.getDate()) + " " + gMonths[new_date.getMonth()] + " " + String(new_date.getFullYear());
 	}
