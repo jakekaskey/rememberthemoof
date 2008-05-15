@@ -85,7 +85,7 @@ var markTaskDone = function (e) {
 	}
 	log(args.task_id + " marked done");
 
-	window.setTimeout(populateTasks, 100);
+	window.setTimeout(populateTasks, 0);
 };
 
 /*
@@ -321,7 +321,7 @@ var buildFront = function () {
 		window.clearTimeout(gUndoTimerId);
 		gUndoTimerId = null;
 	}
-	$("#undoBtn").hide();
+	$("#undoPane").hide();
 
 	return;
 };
@@ -625,7 +625,7 @@ var addNewTask = function (e) {
 	rtmCall("rtm.tasks.add", args);
 
 	hideNewTaskPane();
-	window.setTimeout(populateTasks, 100);
+	window.setTimeout(populateTasks, 0);
 };
 
 var prepUndo = function(id) {
@@ -650,7 +650,7 @@ var doUndo = function(e) {
 	var res = rtmCall("rtm.transactions.undo", args);
 	$("#undoPane").hide();
 
-	window.setTimeout(populateTasks, 100);
+	window.setTimeout(populateTasks, 0);
 
 	return false;
 };
@@ -793,19 +793,10 @@ var openAuthUrl = function (e) {
 	return false;
 };
 
-var goToRTM = function(e) {
+var genericUrlOpen = function(url) {
 	if(window.widget) {
-		widget.openURL("http://www.rememberthemilk.com/");
+		widget.openURL(url);
 	}
-
-	return false;
-};
-var goToProject = function(e) {
-	if(window.widget) {
-		widget.openURL("http://code.google.com/p/rememberthemoof");
-	}
-
-	return false;
 };
 
 var show_waiting = function (show) {
@@ -848,8 +839,11 @@ var setup = function () {
 	});
 
 	if (window.widget) {
+		widget.setCloseBoxOffset(0, 0);
+
 		widget.onshow = buildFront;
-		widget.onhide = function () { };
+		widget.onhide = function () { hideNewTaskPane(); };
+			
 		if(widget.preferenceForKey("authtoken") != "undefined" &&
 				typeof(widget.preferenceForKey("authtoken")) != "undefined") {
 			gRTMAuthToken = widget.preferenceForKey("authtoken");
@@ -859,16 +853,20 @@ var setup = function () {
 		/*
 		apple-gooey setup here
 		*/
-		//gInfoBtn = new AppleInfoButton(document.getElementById("showprefsbtn"), document.getElementById("infowrapper"), "white", "white", showPrefs);
 	}
+		gInfoBtn = new AppleInfoButton($("#infoButton").get(0), $("#front").get(0), "black", "black", showPrefs);
+		// correct apple's draconian positioning
+		var info_img = $("#infoButton").children("img:first");
+		$("#infoButton").css({position: "relative", width: info_img.attr("width"), height:info_img.attr("height")}); 
 	
 	/*
 	connect all of the events
 	*/
-	$("#showprefsbtn").click(showPrefs);
+	//$("#showprefsbtn").click(showPrefs);
 	$("#hideprefsbtn").click(hidePrefs);
-	$("#goToRTM").click(goToRTM);
-	$("#goToProject").click(goToProject);
+	$("#goToRTM").click(function(e) { genericUrlOpen("http://www.rememberthemilk.com/"); return false; } );
+	$("#goToProject").click( function(e) { genericUrlOpen("http://code.google.com/p/rememberthemoof/"); return false; } );
+	$("#goToMoof").click( function(e) { genericUrlOpen("http://www.storybytes.com/moof.html"); return false; } );
 	
 	$("#clearAuthBtn").click(clearAuthTokens);
 	$("#methodInfoBtn").click(getMethodInfo);
@@ -883,15 +881,15 @@ var setup = function () {
 	$("#showNewTaskPane").children("a").click(setupNewTaskPane);
 
 	if(!window.widget) {
+		/*
+		this stuff is all for debugging in a browser
+		*/
 		$(".hideOnLoad").show();
 		buildFront();
 		$("body").css("background-color", "#000044'");
 	}
 	
 	log("setup done");
-	//testLogin();
-
-	//if (typeof(window.widget) == "undefined") populateTasks();
 };
 $(setup);
 

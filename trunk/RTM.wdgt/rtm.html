@@ -41,7 +41,7 @@
 				<span class="left"><img style="height: 12pt;" src="files/rtm_logo_sm.png" /></span>
 				<span class="left"><h3>Tasks</h3></span>
 				<div id="waitIcon" class="left"><img src="./ajax-loader.gif" /></div>
-				<span id="undoPane" class="left"><a href="" id="undoBtn">undo?</a></span>
+				<span id="undoPane" class="left"><a href="" id="undoBtn">undo</a></span>
 				<span class="right linkAsBtn" id="showNewTaskPane"><span class="nolink">Add task</span><a href="">Add task</a></span>
 				<div style="clear: both;"></div>
 				<div id="listSection" class="left"><span>List:</span> <select id="lists"></select></div>
@@ -52,8 +52,10 @@
 				</ul>
 			</div>
 		</div>
-		<div class="section">
-			<span class="right"><input type="submit" value="back" id="showprefsbtn" /></span>
+		<div class="section" id="infoSection">
+			<div class="right" id="infoButton"></div>
+			<span class="right"><!-- input type="submit" value="back" id="showprefsbtn" / --></span>
+			<div style="clear: both;"></div>
 		</div>
 
 		<!-- independently floated -->
@@ -68,17 +70,17 @@
 
 	<div id="back">
 		<div class="section">
-			<span class="right" style="width: 30px; margin: 0;"><img src="files/moof_dark.png" /></span>
+			<span class="right" style="width: 30px; margin: 0;"><a href="" id="goToMoof"><img border="0" src="files/moof_dark.png" /></a></span>
 			<span class="left"><h3>This is the back</h3></span>
 		</div>
-		<div class="section">
+		<div class="section debug">
 			<label for="debugChk">show debug</label> <input type="checkbox" id="debugChk" name="debugChk" />
 		</div>
-		<div class="section">
+		<div class="section debug">
 			<input type="submit" value="Deauthorize"  id="clearAuthBtn" />
 			<input type="submit" value="get new frob" id="getnewfrob" />
 		</div>
-		<div class="section">
+		<div class="section debug">
 			<h2>Methods lookup</h2>
 			<input type="text" size="50" id="methodName"></input>&nbsp; : &nbsp;<input type="submit" value="Get Method Info" id="methodInfoBtn"></input><br/>
 			<div id="methodDisp" rows="10"></div>
