@@ -160,6 +160,7 @@ task list
 	text-align: right;
 }
 #taskList li .tags {
+	display: none;
 }
 
 #waitIcon {
