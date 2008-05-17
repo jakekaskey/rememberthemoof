@@ -582,39 +582,36 @@ var setupTaskPane = function (e) {
 	var pane_top = $(e.target).offset().top;
 
 	if(!newTask) {
-		// populate name, date, tags
+		// populate name, date, tags, extraInfo
 		var par_li = $(e.target).parents("li:first");
-		log("getting existing information");
 		name = par_li.children(".title").children("a").html();
 		date = par_li.children(".due").html();
 		tags = par_li.children(".tags").html();
-		log("name: " + name + ", date: " + date + ", tags: " + tags);
 
-		log("par_li top: " + par_li.offset().top);
-		log("taskpane height: " + $("#taskPane").height());
+		$("#taskPane > .extraInfo").html(par_li.children(".task_chk").attr("id").replace("taskchk_", ""));
+		log("extraInfo: " + $("#taskPane > .extraInfo").html());
 		pane_top = par_li.offset().top - ($("#taskPane").height() / 3);
 	}
-	log("setting task info");
+	/* 
+	this gets both the visibile and the hidden 'orig' values at once 
+	*/
 	$("#taskPane > .taskName > input").val(name);
 	$("#taskPane > .taskDueDate > input").val(date);
 	$("#taskPane > .taskTags > input").val(tags);
 
 	$("#taskPane > .taskList > span").empty();
 
-	log("making a new list");
 	var new_lists = makeListsList();
-	log("appending th enew list");
 	$("#taskPane > .taskList > span").append(new_lists);
 
 
 	/*
 	objective-specific setup
 	*/
-	log("paen_top = " + String(pane_top));
 	$("#taskPane > #taskSubmit").unbind("click");
 	$("#taskPane").css("top", pane_top);
+
 	if(newTask) {
-		log("doing new-task setup");
 		$("#taskPane > .taskTags").hide();
 		$("#taskPane").removeClass("taskEdit").addClass("taskAdd");
 		$("#taskPane > .taskList > label").html("Add to:");
@@ -622,11 +619,12 @@ var setupTaskPane = function (e) {
 		$("#taskPane > #taskSubmit").attr("disabled", true);
 		$("#taskPane").slideDown(200);
 	} else {
-		log("doing edit-task setup");
 		$("#taskPane > .taskTags").show();
 		$("#taskPane").removeClass("taskAdd").addClass("taskEdit");
 		$("#taskPane > .taskList > label").html("List:");
 		$("#taskPane > #taskSubmit").click(updateTask).val("Update task");
+		$("#taskPane > #taskSubmit").attr("disabled", false);
+		
 		$("#taskPane").show(200);
 	}
 	/*
@@ -718,6 +716,55 @@ var addNewTask = function (e) {
 
 var updateTask = function (e) {
 	log("we'd be updating the task here");
+
+	var extraInfo = $("#taskPane > .extraInfo").html().split("_");
+	var attr;
+	log("task info: " + extraInfo.join(", "));
+
+	/*
+	attr needs to be defined new each time; leftover attributes get passed in the URL as 'attr=null'
+	*/
+	if($("#taskPane > .taskName > input.user").val() != $("#taskPane > .taskName > input.orig").val()) {
+		attr = {
+			timeline: rtmTimeline(),
+			list_id: extraInfo[0],
+			taskseries_id: extraInfo[1],
+			task_id: extraInfo[2],
+			name: $("#taskPane > .taskName > input.user").val()
+			};
+		log("updating task name to " + attr.name);
+		rtmCall("rtm.tasks.setName", attr);
+	}
+	if($("#taskPane > .taskDueDate > input.user").val() != $("#taskPane > .taskDueDate > input.orig").val()) {
+		attr = {
+			timeline: rtmTimeline(),
+			list_id: extraInfo[0],
+			taskseries_id: extraInfo[1],
+			task_id: extraInfo[2]
+			};
+		if($("#taskPane > .taskDueDate > input.user").val().length > 0) {
+			log ("new due date: " + $("#taskPane > .taskDueDate > input.user").val());
+			attr.due = $("#taskPane > .taskDueDate > input.user").val();
+			attr.parse = "1";
+		} else { log("no due date..."); }
+		log("updating due date to " + attr.due);
+		rtmCall("rtm.tasks.setDueDate", attr);
+	}
+	if($("#taskPane > .taskTags > input.user").val() != $("#taskPane > .taskTags > input.orig").val()) {
+		attr = {
+			timeline: rtmTimeline(),
+			list_id: extraInfo[0],
+			taskseries_id: extraInfo[1],
+			task_id: extraInfo[2],
+			tags: $("#taskPane > .taskTags > input.user").val()
+			};
+		log("updating tags to " + attr.tags);
+		rtmCall("rtm.tasks.setTags", attr);
+	}
+	log("finished with updates");
+
+	hideTaskPane();
+	window.setTimeout(populateTasks, 0);
 };
 
 var prepUndo = function(id) {

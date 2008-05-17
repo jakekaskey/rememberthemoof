@@ -63,10 +63,10 @@
 		<!-- independently floated -->
 		<div id="taskPane" class="hideOnLoad">
 			<span class="taskList"><label>googly</label> <span></span></span><br/>
-			<span class="taskName"><label>Name:</label> <input type="text" id="name" /></span><br/>
-			<span class="taskDueDate"><label>Due:</label> <input type="text" id="dueDate" /></span><br/>
-			<span class="taskTags"><label>Tags:</label> <input type="text" id="tags" /></span><br/>
-			<span class="method hideOnLoad"></span>
+			<span class="taskName"><label>Name:</label> <input type="text" class="user" /><input type="hidden" class="orig" /></span><br/>
+			<span class="taskDueDate"><label>Due:</label> <input type="text" class="user" /><input type="hidden" class="orig" /></span><br/>
+			<span class="taskTags"><label>Tags:</label> <input type="text" class="user" /><input type="hidden" class="orig" /></span><br/>
+			<span class="extraInfo hideOnLoad"></span>
 			<input type="submit" id="taskCancel" value="Never mind"/>&nbsp;&nbsp;<input type="submit" id="taskSubmit" value="googly" disabled="true" />
 		</div>
 		<div style="clear: both;"></div>
@@ -104,7 +104,7 @@
 	</div>
 </div>
 
-<li id="itemTemplate"><input type="checkbox" class="task_chk" name="" /><span class="title"></span><span class="due"></span><span class="tags">tags</span><div style="clear: both;"></div></li>
+<li id="itemTemplate"><input type="checkbox" class="task_chk" name="" /><span class="title"></span><span class="due"></span><span class="tags"></span><div style="clear: both;"></div></li>
 
 </body>
 
