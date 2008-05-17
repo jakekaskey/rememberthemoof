@@ -14,6 +14,7 @@ this stuff is for when I start snazzing this up apple-style
 */
 var gInfoBtn;
 var gDoneBtn;
+var gDEBUG = true;
 /*  
 use me if you want to experiment locally, but be sure to uncomment the related code
 elsewhere
@@ -29,6 +30,7 @@ var gRTMTimelineId = -1;
 var gLastTransId = "0";
 var gCurrentList = 0;
 var gUndoTimerId;
+var gTagList = [];
 
 /*
 Hey, *here's* something for i18n!
@@ -111,7 +113,7 @@ method to fill out the task list
 
 NOTE: this *sorely* needs refactoring...
 */
-var populateTasks = function (killearly) {
+var populateTasks = function () {
 	log("populating tasks");
 
 	var list_id = gCurrentList;
@@ -126,8 +128,6 @@ var populateTasks = function (killearly) {
 	if(tasks.stat == "failure" || $(tasks.data).children("rsp").children("tasks").length < 1)
 		return;
 	tasks = tasks.data;
-	//if(typeof(killearly) != "undefined" && killearly == true) return;
-	
 
 	/*
 	first, clean up list
@@ -137,6 +137,7 @@ var populateTasks = function (killearly) {
 	var lists = $(tasks).children("rsp").children("tasks").children("list").get(); //.children("taskseries").filter("task:first").get();
 	var cur_list;
 	var ts_list;
+	var tags;
 	var cur_ts;
 	var cur_task;
 	var task_list = [];
@@ -151,15 +152,27 @@ var populateTasks = function (killearly) {
 		ts_list = cur_list.children("taskseries").get();
 		for(var ts_ind in ts_list) {
 			cur_ts = $(ts_list[ts_ind]);
+			tags = [];
 			// log("looking at taskseries " + cur_ts.attr("name"));
+			// log("cur_ts: " + cur_ts.text());
 			cur_task = cur_ts.children("task:first");
 			if(typeof(cur_task.attr("completed")) == "undefined" && typeof(cur_task.attr("delete")) == "undefined") {
 				// log("valid task '" + cur_ts.attr("name") + "'");
+				var pos_tags = cur_ts.children("tags").children("tag");
+				if(pos_tags.length > 0) {
+					for(var t in pos_tags.get()) {
+						log("fetching tag " + String(t));
+						tags.push($(pos_tags.get()[t]).text());
+						gTagList.push($(pos_tags.get()[t]).text());
+					}
+					log("tags: " + tags)
+				}
 				task_obj = {
 					list_id: cur_list_id,
 					name: cur_ts.attr("name"),
 					ts_id: cur_ts.attr("id"),
 					task_id: cur_task.attr("id"),
+					tags: tags.join(","),
 					due: parseRTMDate(cur_task.attr("due"), (cur_task.attr("has_due_time") == "1"))
 				};
 				task_list.push({due:cur_task.attr("due"), task:task_obj});
@@ -181,8 +194,9 @@ var populateTasks = function (killearly) {
 	*/
 	$("#splashSection").hide();
 	$("#taskSection").show();
-	$("#showprefsbtn").show();
+	$(".taskEdit").click(setupTaskPane);
 //	$("#listid").html(tasks.list.id);
+	//log("taskList has " + $("#taskList").children("li").length + " children");
 };
 
 /*
@@ -220,7 +234,7 @@ var rtmDueSort = function(task1, task2) {
 /*
 creates a list item for a task, called mainly from populateTasks()
 */
-var addTaskToList = function() {  // this == {due:[due, has_due_time] task:{list_id, name, ts_id, task_id, due}}
+var addTaskToList = function() {  // this == {due:due task:{list_id, name, ts_id, task_id, tags, due}}
 	/*log("addtasktolist this: " + String(this));
 	for(var k in this) {
 		log("addtasktolist: this[" + k + "] == " + this[k]);
@@ -231,15 +245,19 @@ var addTaskToList = function() {  // this == {due:[due, has_due_time] task:{list
 	var list_id = String(cur_task.list_id);
 	var taskseries_id = String(cur_task.ts_id);
 	var task_id = String(cur_task.task_id);
+	var tags = cur_task.tags;
 	var name = String(cur_task.name).replace("<", "&lt;", "g").replace(">", "&gt;", "g");
 	var due = String(cur_task.due);
 
+	
+
 	//log("filling in newItem values");
-	newItem.children(".title:first").html(name);
-	newItem.children(".due:first").html(due);
-	newItem.children(".task_chk:first").attr("name", "taskchk_" + list_id + "_" + taskseries_id + "_" + task_id);
-	newItem.children(".task_chk:first").attr("id", "taskchk_" + list_id + "_" + taskseries_id + "_" + task_id);
-	newItem.children(".task_chk:first").change(markTaskDone);
+	newItem.children(".title").append($("<a href='' class='taskEdit'>" + name + "</a>"));
+	newItem.children(".due").html(due);
+	newItem.children(".tags").html(tags);
+	newItem.children(".task_chk").attr("name", "taskchk_" + list_id + "_" + taskseries_id + "_" + task_id);
+	newItem.children(".task_chk").attr("id", "taskchk_" + list_id + "_" + taskseries_id + "_" + task_id);
+	newItem.children(".task_chk").change(markTaskDone);
 	//log("appending newItem");
 	$("#taskList").append(newItem);
 	//log("showing newItem");
@@ -260,7 +278,7 @@ var populateLists = function () {
 
 	if(lists.stat == "failure" || $(lists.data).children("rsp").children("lists").length < 1)
 		return;
-	lists = $(lists.data).children("rsp:first");
+	lists = $(lists.data).children("rsp");
 
 	log("initial list: " + String(gCurrentList));
 
@@ -552,69 +570,129 @@ var clearAuthTokens = function (e) {
 };
 
 /*
-this is for showing and setting up the Add Task panel
+this is for showing and setting up the Add/Edit Task panel
 */
-var setupNewTaskPane = function (e) {
-	$("#newTaskName").val("");
-	$("#newTaskDueDate").val("");
-	$("#newTaskList").empty();
+var setupTaskPane = function (e) {
+	log("setupTaskPane triggered by " + $(e.target).attr("class"));
 
-	var new_lists = $("#lists").clone().get(0);
-	new_lists.id =  "newTaskList_list";
+	var newTask = ($(e.target).hasClass("taskAdd")) ? true : false;
+	var name = "";
+	var date = "";
+	var tags = "";
+	var pane_top = $(e.target).offset().top;
+
+	if(!newTask) {
+		// populate name, date, tags
+		var par_li = $(e.target).parents("li:first");
+		log("getting existing information");
+		name = par_li.children(".title").children("a").html();
+		date = par_li.children(".due").html();
+		tags = par_li.children(".tags").html();
+		log("name: " + name + ", date: " + date + ", tags: " + tags);
+
+		log("par_li top: " + par_li.offset().top);
+		log("taskpane height: " + $("#taskPane").height());
+		pane_top = par_li.offset().top - ($("#taskPane").height() / 3);
+	}
+	log("setting task info");
+	$("#taskPane > .taskName > input").val(name);
+	$("#taskPane > .taskDueDate > input").val(date);
+	$("#taskPane > .taskTags > input").val(tags);
+
+	$("#taskPane > .taskList > span").empty();
+
+	log("making a new list");
+	var new_lists = makeListsList();
+	log("appending th enew list");
+	$("#taskPane > .taskList > span").append(new_lists);
+
+
+	/*
+	objective-specific setup
+	*/
+	log("paen_top = " + String(pane_top));
+	$("#taskPane > #taskSubmit").unbind("click");
+	$("#taskPane").css("top", pane_top);
+	if(newTask) {
+		log("doing new-task setup");
+		$("#taskPane > .taskTags").hide();
+		$("#taskPane").removeClass("taskEdit").addClass("taskAdd");
+		$("#taskPane > .taskList > label").html("Add to:");
+		$("#taskPane > #taskSubmit").click(addNewTask).val("Add task");
+		$("#taskPane > #taskSubmit").attr("disabled", true);
+		$("#taskPane").slideDown(200);
+	} else {
+		log("doing edit-task setup");
+		$("#taskPane > .taskTags").show();
+		$("#taskPane").removeClass("taskAdd").addClass("taskEdit");
+		$("#taskPane > .taskList > label").html("List:");
+		$("#taskPane > #taskSubmit").click(updateTask).val("Update task");
+		$("#taskPane").show(200);
+	}
+	/*
+	finally, position and show
+	*/
+	//$("#showNewTaskPane").attr("disabled", true);
+	//linkManip($("#showNewTaskPane").get(0), false);
+	/* come back to ths later
+	$("#showNewTaskPane").children(".nolink:first").show();
+	$("#showNewTaskPane").children("a:first").hide();
+	*/
+
+	$("#taskPane > .taskName > input").focus();
+
+	return false;
+};
+
+var editTaskTagsChange = function (e) {
+	log("editTaskTags now " + $(e.target).val());
+};
+
+var makeListsList = function() {
+	var listsList = $("#lists").clone().get(0);
 	
 	/*
 	TESTING: filter out lists that aren't real (i.e., "All")
 	*/
-	log(new_lists.options.length + " items to check");
-	for(var l = 0; l < new_lists.options.length; l++) {
+	log(listsList.options.length + " items to check");
+	for(var l = 0; l < listsList.options.length; l++) {
 		log("l == " + l);
-		if(typeof(new_lists.options[l]) != "object") {
-			log("strange; type is " + typeof(new_lists.options[l]) + " with a value of " + new_lists.options[l]);
+		if(typeof(listsList.options[l]) != "object") {
+			log("strange; type is " + typeof(listsList.options[l]) + " with a value of " + listsList.options[l]);
 			continue;
 		}
-		log("checking list item: " + new_lists.options[l].id);
-		if(Number(new_lists.options[l].id.split("_")[1]) < 1) {
-			var rem_opt = new_lists.removeChild(new_lists.options[l]);
+		log("checking list item: " + listsList.options[l].id);
+		if(Number(listsList.options[l].id.split("_")[1]) < 1) {
+			var rem_opt = listsList.removeChild(listsList.options[l]);
 			log("removed item: " + rem_opt.id);
-		} else if(Number(new_lists.options[l].id.split("_")[1]) == gCurrentList) {
-			new_lists.selectedIndex = l;
+		} else if(Number(listsList.options[l].id.split("_")[1]) == gCurrentList) {
+			listsList.selectedIndex = l;
 		}
 	}
+	log("resulting listsList size: " + listsList.options.length);
+	if(listsList.options.length < 1)
+		listsList.disabled = true;
 
-	log("resulting new_lists size: " + new_lists.options.length);
-	if(new_lists.options.length < 1)
-		new_lists.disabled = true;
+	return listsList;
+};
 
-	$("#newTaskList").append(new_lists);
-
-	$("#newTaskSubmit").attr("disabled", true);
-
-	$("#addTask").css("top", $("#showNewTaskPane").offset().top + $("#showNewTaskPane").get(0).offsetHeight);
-	$("#addTask").slideDown(100);
-	//$("#showNewTaskPane").attr("disabled", true);
-	//linkManip($("#showNewTaskPane").get(0), false);
-	$("#showNewTaskPane").children(".nolink:first").show();
-	$("#showNewTaskPane").children("a:first").hide();
+var hideTaskPane = function (e) {
+	if($("#taskPane").hasClass("taskAdd")) {
+		$("#taskPane").slideUp(100);
+		/*$("#showNewTaskPane").children(".nolink:first").hide();
+		$("#showNewTaskPane").children("a:first").show();*/
+	} else {
+		$("#taskPane").hide(100);
+	}
 
 	return false;
 };
 
-var hideNewTaskPane = function (e) {
-	//$("#addTask").hide();
-	$("#addTask").slideUp(100);
-	//linkManip($("#showNewTaskPane").get(0), true);
-	$("#showNewTaskPane").children(".nolink:first").hide();
-	$("#showNewTaskPane").children("a:first").show();
-	//$("#showNewTaskPane").children("a:first").click(setupNewTaskPane);
-
-	return false;
-};
-
-var updateNewTaskPane = function (e) {
-	if($("#newTaskName").val().length > 0)
-		$("#newTaskSubmit").attr("disabled", false);
+var updateTaskPane = function (e) {
+	if($(e.target).val().length > 0)
+		$("#taskPane > #taskSubmit").attr("disabled", false);
 	else
-		$("#newTaskSubmit").attr("disabled", true);
+		$("#taskPane > #taskSubmit").attr("disabled", true);
 		
 	return false;
 };
@@ -632,15 +710,14 @@ var addNewTask = function (e) {
 		args.list_id = String(sel_list_id);
 	}
 	
-	/*
-	args.name = String(args.name).replace(/[?<>&;:@=]/, function(s) { return escape(s); }); 
-	args.name = String(args.name).replace("/", "%2F", "g");
-	args.name = String(args.name).replace(">", "%3E", "g");
-	*/
 	rtmCall("rtm.tasks.add", args);
 
-	hideNewTaskPane();
+	hideTaskPane();
 	window.setTimeout(populateTasks, 0);
+};
+
+var updateTask = function (e) {
+	log("we'd be updating the task here");
 };
 
 var prepUndo = function(id) {
@@ -848,6 +925,13 @@ var linkManip  = function (el, makeLink) {
 main setup function
 ********/
 var setup = function () {
+
+	if(typeof(gDEBUG) != "undefined") {
+		log = oldlog;
+		$("#evenMore").show();
+		$("#debugChk").attr("value", "on");
+	}
+
 	log("entering setup");
 
 	$.ajaxSetup({
@@ -860,7 +944,7 @@ var setup = function () {
 		widget.setCloseBoxOffset(0, 0);
 
 		widget.onshow = buildFront;
-		widget.onhide = function () { hideNewTaskPane(); };
+		widget.onhide = function () { hideTaskPane(); };
 			
 		if(widget.preferenceForKey("authtoken") != "undefined" &&
 				typeof(widget.preferenceForKey("authtoken")) != "undefined") {
@@ -878,26 +962,37 @@ var setup = function () {
 		var info_img = $("#infoButton").children("img:first");
 		$("#infoButton").css({position: "relative", width: info_img.attr("width"), height:info_img.attr("height")}); 
 	
-	/*
+	/*********
 	connect all of the events
+	**********/
+	
+	/*
+	url pate opens
 	*/
-	//$("#showprefsbtn").click(showPrefs);
-	//$("#hideprefsbtn").click(hidePrefs);
 	$("#goToRTM").click(function(e) { genericUrlOpen("http://www.rememberthemilk.com/"); return false; } );
 	$("#goToProject").click( function(e) { genericUrlOpen("http://code.google.com/p/rememberthemoof/"); return false; } );
 	$("#goToMoof").click( function(e) { genericUrlOpen("http://www.storybytes.com/moof.html"); return false; } );
 	
-	$("#clearAuthBtn").click(clearAuthTokens);
-	$("#methodInfoBtn").click(getMethodInfo); 
-	$("#getnewfrob").click(getFrobTest);
-	$("#debugChk").click(toggleDebugDisplay);
 	$("#lists").change(loadNewList);
 	$("#undoBtn").click(doUndo);
 
-	$("#newTaskCancel").click(hideNewTaskPane);
-	$("#newTaskSubmit").click(addNewTask);
-	$("#newTaskName").keyup(updateNewTaskPane);
-	$("#showNewTaskPane").children("a").click(setupNewTaskPane);
+	/*
+	taskPane setup -- we've generalized this!
+	*/
+	$(".taskAdd, .taskEdit").click(setupTaskPane);
+	$("#taskPane > .taskName > input").keyup(updateTaskPane);
+	$("#taskPane > #taskCancel").click(hideTaskPane);
+
+	/*
+	debug stuff
+	*/
+	$("#clearAuthBtn").click(clearAuthTokens);
+	$("#methodInfoBtn").click(getMethodInfo); 
+	$("#getnewfrob").click(getFrobTest);
+	$("#dumphtml").click(dumpHtml);
+
+	$("#debugChk").click(toggleDebugDisplay);
+
 
 	if(!window.widget) {
 		/*
@@ -916,8 +1011,25 @@ $(setup);
 /*
 testing functions, ignore
 */
-var getFrobTest = function () {
+var getFrobTest = function (e) {
 	var frobArgs = {method: "rtm.auth.getFrob", api_key: gRTMAPIKey, format: "json"};
 	
 	$("#methodDisp").html(String(rtmAjax(gRTMMethUrl, frobArgs)).replace("<", "&lt;","g").replace(">", "&gt;","g"));
+};
+
+var dumpHtml = function (e) {
+	if(window.widget) {
+		log("dumping widget html");
+		try {
+			var status = widget.system("echo '" + document.body.innerHTML.replace("'", "\'", "g") + "' > /tmp/RTM.out", null).status;
+
+			if(Number(status) != 0) {
+				log("dumpHtml exited with status " + String(status));
+			} else {
+				log("document html outputted to /tmp/RTM.out");
+			}
+		} catch (e) {
+			log("using widget.system froze things up: " + e);
+		}
+	}
 };
