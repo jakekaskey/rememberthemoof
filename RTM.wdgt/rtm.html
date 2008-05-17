@@ -37,17 +37,19 @@
 		<div class="section" id="addTaskSection">
 		</div>
 		<div class="section hideOnLoad" id="taskSection">
-			<div id="taskpane">
+			<div>
 				<span class="left"><img style="height: 12pt;" src="files/rtm_logo_sm.png" /></span>
 				<span class="left"><h3>Tasks</h3></span>
 				<div id="waitIcon" class="left"><img src="./ajax-loader.gif" /></div>
 				<span id="undoPane" class="left"><a href="" id="undoBtn">undo</a></span>
-				<span class="right linkAsBtn" id="showNewTaskPane"><span class="nolink">Add task</span><a href="">Add task</a></span>
+				<span class="right linkAsBtn" id="showNewTaskPane"><span class="nolink">Add task</span><a href="" class="taskAdd">Add task</a></span>
 				<div style="clear: both;"></div>
 				<div id="listSection" class="left"><span>List:</span> <select id="lists"></select></div>
 				<ul id="taskList">
-<li><input type="checkbox" class="task_chk" name="" /><span class="title">ssample task 1 sample task 1 sample task 1 sample task 1 sample task 1 ample task 1 </span><span class="due">thisisareallylongbutplausibledate</span><div style="clear: both;"></div></li>
-<li><input type="checkbox" class="task_chk" name="" /><span class="title">sample task 2</span><span class="due">14 jun 2008 at 1232</span><div style="clear: both;"></div></li>
+<li><input type="checkbox" class="task_chk" name="" /><span class="title">title</span><span class="due">ddueduedueduedueduedueduedueduedueduedueduedueue</span><span class="tags">tags</span><div style="clear: both;"></div></li>
+<li><input type="checkbox" class="task_chk" name="" /><span class="title">title</span><span class="due">dueduedueue</span><span class="tags">tags</span><div style="clear: both;"></div></li>
+<li ><input type="checkbox" class="task_chk" name="" /><span class="title"><a href="" class="taskEdit">title</a></span><span class="due"></span><span class="tags">tags</span><div style="clear: both;"></div></li>
+<li ><input type="checkbox" class="task_chk" name="" /><span class="title"><a href="" class="taskEdit">title</a></span><span class="due"></span><span class="tags">tags</span><div style="clear: both;"></div></li>
 				
 				</ul>
 			</div>
@@ -59,11 +61,13 @@
 		</div>
 
 		<!-- independently floated -->
-		<div id="addTask" class="hideOnLoad">
-			Add to: <span id="newTaskList"></span><br/>
-			Name: <input type="text" id="newTaskName" /><br/>
-			Due: <input type="text" id="newTaskDueDate" /><br/>
-			<input type="submit" id="newTaskCancel" value="Never mind"/>&nbsp;&nbsp;<input type="submit" id="newTaskSubmit" value="Add task" disabled="true" />
+		<div id="taskPane" class="hideOnLoad">
+			<span class="taskList"><label>googly</label> <span></span></span><br/>
+			<span class="taskName"><label>Name:</label> <input type="text" id="name" /></span><br/>
+			<span class="taskDueDate"><label>Due:</label> <input type="text" id="dueDate" /></span><br/>
+			<span class="taskTags"><label>Tags:</label> <input type="text" id="tags" /></span><br/>
+			<span class="method hideOnLoad"></span>
+			<input type="submit" id="taskCancel" value="Never mind"/>&nbsp;&nbsp;<input type="submit" id="taskSubmit" value="googly" disabled="true" />
 		</div>
 		<div style="clear: both;"></div>
 	</div>
@@ -79,6 +83,7 @@
 		<div class="section debug">
 			<input type="submit" value="Deauthorize"  id="clearAuthBtn" />
 			<input type="submit" value="get new frob" id="getnewfrob" />
+			<input type="submit" value="dump html" id="dumphtml" />
 		</div>
 		<div class="section debug">
 			<h2>Methods lookup</h2>
@@ -99,7 +104,7 @@
 	</div>
 </div>
 
-<li id="itemTemplate"><input type="checkbox" class="task_chk" name="" /><span class="title">title</span><span class="due"></span><div style="clear: both;"></div></li>
+<li id="itemTemplate"><input type="checkbox" class="task_chk" name="" /><span class="title"></span><span class="due"></span><span class="tags">tags</span><div style="clear: both;"></div></li>
 
 </body>
 

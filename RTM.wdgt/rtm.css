@@ -117,11 +117,11 @@ h1, h2, h3 {
 	display: none;
 }
 
-#taskpane {
+#taskSection > div {
 	/*border: 1px dotted #00f;*/
 }
 
-/*#taskpane h3 {
+/*#taskSection > div h3 {
 	margin: 0;
 }*/
 
@@ -139,7 +139,7 @@ task list
 	margin: 0;
 	clear: left;
 }
-#taskList li * {
+#taskList li > * {
 	/*border: 1px solid #f00;*/
 }
 #taskList li .task_chk {
@@ -159,6 +159,8 @@ task list
 	color: #aaa;
 	text-align: right;
 }
+#taskList li .tags {
+}
 
 #waitIcon {
 	display: none;
@@ -172,7 +174,7 @@ task list
 	background-color: #fad164;
 }
 
-#addTask {
+#taskPane {
 	position: absolute;
 	padding: 8px;
 	background-color: #fff;
