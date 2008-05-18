@@ -380,6 +380,8 @@ var getMethodInfo = function (e) {
 	rtmSign(args);
 
 	$("#methodDisp").html(rtmAjax(gRTMMethUrl, args));
+
+	makeWindowFit($("#back"));
 };
 
 
@@ -1176,9 +1178,9 @@ var setup = function () {
 	/*
 	url pate opens
 	*/
-	$("#goToRTM").click(function(e) { genericUrlOpen("http://www.rememberthemilk.com/"); return false; } );
-	$("#goToProject").click( function(e) { genericUrlOpen("http://code.google.com/p/rememberthemoof/"); return false; } );
-	$("#goToMoof").click( function(e) { genericUrlOpen("http://www.storybytes.com/moof.html"); return false; } );
+	$(".goToRTM").click(function(e) { genericUrlOpen("http://www.rememberthemilk.com/"); return false; } );
+	$(".goToProject").click( function(e) { genericUrlOpen("http://code.google.com/p/rememberthemoof/"); return false; } );
+	$(".goToMoof").click( function(e) { genericUrlOpen("http://www.storybytes.com/moof.html"); return false; } );
 	
 	$("#lists").change(loadNewList);
 	$("#undoBtn").click(doUndo);
