@@ -15,7 +15,7 @@ body {
 	font-size: 10pt;
 	margin: 0;
 	padding: 0;
-	width: 450px;
+	width: 400px;
 }
 
 h1, h2, h3 {
@@ -71,12 +71,12 @@ a:hover {
 }
 #front .section {
 	padding: 0;
-	width: 440px;
+	width: 390px;
 }
 
 #back .section {
 	padding-left: 30px;
-	width: 410px;
+	width: 360px;
 
 }
 
@@ -93,7 +93,7 @@ a:hover {
 
 #splashSection {
 	margin: -5px 0 0 -5px;
-	width: 450px;
+	width: 400px;
 }
 
 #itemTemplate {
@@ -179,9 +179,17 @@ task list
 	display: none;
 	font-size: 9pt;
 	margin-left: 10px;
-	padding: 2px 4px;
-	background-color: #fad164;
+	height: 12pt;
 }
+
+#undoPane a {
+	background-color: #ffcc66;
+	color: #0066b8 !important;
+	font-weight: bold;
+	padding: 2px 5px;
+	text-decoration: underline;
+}
+
 
 #taskPane {
 	position: absolute;
