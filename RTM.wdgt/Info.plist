@@ -2,8 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>MainHTML</key>
-	<string>rtm.html</string>
 	<key>AllowFullAccess</key>
 	<true/>
 	<key>BackwardsCompatibleClassLookup</key>
@@ -17,15 +15,17 @@
 	<key>CFBundleName</key>
 	<string>Remember the Moof</string>
 	<key>CFBundleShortVersionString</key>
-	<string>0.1</string>
+	<string>caribou</string>
 	<key>CFBundleVersion</key>
-	<string>0.1</string>
+	<string>caribou</string>
 	<key>CloseBoxInsetX</key>
-	<integer>50</integer>
+	<integer>0</integer>
 	<key>CloseBoxInsetY</key>
-	<integer>50</integer>
+	<integer>0</integer>
 	<key>Height</key>
 	<integer>768</integer>
+	<key>MainHTML</key>
+	<string>rtm.html</string>
 	<key>Width</key>
 	<integer>400</integer>
 </dict>
