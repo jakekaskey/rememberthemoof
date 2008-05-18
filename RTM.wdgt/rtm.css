@@ -22,11 +22,11 @@ h1, h2, h3 {
 	margin: 0;
 }
 
-a {
+#front a {
 	color:  #000;
 	text-decoration: none;
 }
-a:hover {
+#front a:hover {
 	color: #36c;
 }
 
@@ -40,6 +40,7 @@ a:hover {
 
 #front {
 	/*background: url('files/rtm_logo.png') no-repeat top left #f7f7f7 fixed;*/
+	border: 1px solid #000;
 	display: block;
 	padding: 5px;
 	background-color: #f7f7f7;
