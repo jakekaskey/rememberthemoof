@@ -58,8 +58,9 @@ var showPrefs = function () {
 	$("#back").show();
 
 	if(window.widget)
-		setTimeout('widget.performTransition();', 0);
+		window.setTimeout('widget.performTransition();', 0);
 
+	makeWindowFit($("#back"));
 	return false;
 };
 var hidePrefs = function () {
@@ -68,8 +69,8 @@ var hidePrefs = function () {
 	$("#back").hide();
 	$("#front").show();
 	if(window.widget)
-		setTimeout('widget.performTransition();', 0);
-
+		window.setTimeout('widget.performTransition();', 0);
+	makeWindowFit($("#front"));
 	return false;
 };
 
@@ -213,6 +214,11 @@ var populateTasksContinue = function (tasks) {
 	$("#splashSection").hide();
 	$("#taskSection").show();
 	$(".taskEdit").click(setupTaskPane);
+
+	/*
+	testing: can we reset the widget?
+	*/
+	makeWindowFit($("#front"));
 //	$("#listid").html(tasks.list.id);
 	//log("taskList has " + $("#taskList").children("li").length + " children");
 };
@@ -701,7 +707,7 @@ var setupTaskPane = function (e) {
 		$("#taskPane > .taskList > label").html("Add to:");
 		$("#taskPane > #taskSubmit").click(addNewTask).val("Add task");
 		$("#taskPane > #taskSubmit").attr("disabled", true);
-		$("#taskPane").slideDown(200);
+		$("#taskPane").slideDown(200, function() { makeWindowFit($("#front")); } );
 	} else {
 		$("#taskPane > .taskTags").show();
 		$("#taskPane > .taskList").hide();
@@ -710,7 +716,7 @@ var setupTaskPane = function (e) {
 		$("#taskPane > #taskSubmit").click(updateTask).val("Update task");
 		$("#taskPane > #taskSubmit").attr("disabled", false);
 		
-		$("#taskPane").show(200);
+		$("#taskPane").show(200, function () { makeWindowFit($("#front")); } );
 	}
 	/*
 	finally, position and show
@@ -761,11 +767,9 @@ var makeListsList = function() {
 
 var hideTaskPane = function (e) {
 	if($("#taskPane").hasClass("taskAdd")) {
-		$("#taskPane").slideUp(100);
-		/*$("#showNewTaskPane").children(".nolink:first").hide();
-		$("#showNewTaskPane").children("a:first").show();*/
+		$("#taskPane").slideUp(100, makeWindowFit.call(null, $("#front")));
 	} else {
-		$("#taskPane").hide(100);
+		$("#taskPane").hide(100, makeWindowFit.call(null, $("#front")));
 	}
 
 	return false;
@@ -1078,6 +1082,49 @@ var linkManip  = function (el, makeLink) {
 	}
 };
 
+/*
+resize the window to fit when necessary
+*/
+var makeWindowFit = function(el) {
+	if(window.widget) {
+		var newdims = {w:el.width(), h: el.height()};
+		log("pre-adjustment dims: w=" + newdims.w + ", h=" + newdims.h);
+		adjustForPadMarg.call(el, newdims);
+		log("post-adjustment dims: w=" + newdims.w + ", h=" + newdims.h);
+
+		if($("#taskPane").css("display") != "none") {
+			/*
+			accomodate taskPane
+			*/
+			var tp_dims = {w: $("#taskPane").width(), h: $("#taskPane").height()};
+			adjustForPadMarg.call($("#taskPane"), tp_dims);
+
+			log("taskpane dims: w=" + tp_dims.w + ", h=" + tp_dims.h);
+
+			if(tp_dims.h + $("#taskPane").offset().top > newdims.h)	newdims.h = tp_dims.h + $("#taskPane").offset().top;
+			if(tp_dims.w + $("#taskPane").offset().left > newdims.w) newdims.w = tp_dims.w + $("#taskPane").offset().left;
+		}
+
+		log("resizing to: w=" + newdims.w + ", h=" + newdims.h);
+
+		window.resizeTo(newdims.w, newdims.h);
+	}
+};
+
+var adjustForPadMarg = function(dims) {
+	log("adjusting pad/marg for " + this.attr("id"));
+	var extra = {x: 0, y: 0};
+	var dimNames = {
+			x:["padding-left", "padding-right", "margin-left", "margin-right", "border-left-width", "border-right-width"],
+			y:["padding-top", "padding-bottom", "margin-top", "margin-bottom", "border-top-width", "border-right-width"]
+		};
+	log("pulling extra dimensions");
+	for(var i in dimNames.x) extra.x += Number(String(this.css(dimNames.x[i])).replace(/[^0-9]/g, ""));
+	for(var i in dimNames.y) extra.y += Number(String(this.css(dimNames.y[i])).replace(/[^0-9]/g, ""));
+	log("extra dims: x=" + extra.x + ", y=" + extra.y);
+	dims.w += extra.x;
+	dims.h += extra.y;
+};
 
 /*******
 main setup function
