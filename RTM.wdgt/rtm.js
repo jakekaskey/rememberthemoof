@@ -15,6 +15,8 @@ this stuff is for when I start snazzing this up apple-style
 var gInfoBtn;
 var gDoneBtn;
 var gDEBUG = true;
+
+
 /*  
 use me if you want to experiment locally, but be sure to uncomment the related code
 elsewhere
@@ -88,7 +90,7 @@ var markTaskDone = function (e) {
 	}
 	log(args.task_id + " marked done");
 
-	window.setTimeout(populateTasks, 0);
+	populateTasks();
 };
 
 /*
@@ -115,6 +117,7 @@ NOTE: this *sorely* needs refactoring...
 */
 var populateTasks = function () {
 	log("populating tasks");
+	show_waiting(true);
 
 	var list_id = gCurrentList;
 	log("list_id: " + String(list_id));
@@ -123,8 +126,11 @@ var populateTasks = function () {
 	if(isNaN(list_id) == false && Number(list_id) > 0)
 		arguments.list_id = String(list_id);
 
-	var tasks = rtmCall("rtm.tasks.getList", arguments, true);
+//	var tasks = rtmCall("rtm.tasks.getList", arguments, true);
+	rtmCallAsync ("rtm.tasks.getList", arguments, true, populateTasksContinue);
+};
 
+var populateTasksContinue = function (tasks) {
 	if(tasks.stat == "failure" || $(tasks.data).children("rsp").children("tasks").length < 1)
 		return;
 	tasks = tasks.data;
@@ -192,6 +198,7 @@ var populateTasks = function () {
 	this only matters the first time, so it'd be *really* nice to have it in some sort of
 	chained-function capability (chain it in the setup routine)....
 	*/
+	show_waiting(false);
 	$("#splashSection").hide();
 	$("#taskSection").show();
 	$(".taskEdit").click(setupTaskPane);
@@ -249,8 +256,6 @@ var addTaskToList = function() {  // this == {due:due task:{list_id, name, ts_id
 	var name = String(cur_task.name).replace("<", "&lt;", "g").replace(">", "&gt;", "g");
 	var due = String(cur_task.due);
 
-	
-
 	//log("filling in newItem values");
 	newItem.children(".title").append($("<a href='' class='taskEdit'>" + name + "</a>"));
 	newItem.children(".due").html(due);
@@ -269,13 +274,16 @@ var addTaskToList = function() {  // this == {due:due task:{list_id, name, ts_id
 
 var populateLists = function () {
 	log("populating lists popup");
+	show_waiting(true);
 	//gCurrentList = Number($("#lists").get(0).options[$("#lists").get(0).selectedIndex].id.split("_")[1]);
 	$("#lists").empty();
 
 	addListItem(-1, {name: "All", id: "-1"});
 
-	var lists = rtmCall("rtm.lists.getList", null, true);
+	rtmCallAsync("rtm.lists.getList", null, true, populateListsContinue);
+};
 
+var populateListsContinue = function (lists) {
 	if(lists.stat == "failure" || $(lists.data).children("rsp").children("lists").length < 1)
 		return;
 	lists = $(lists.data).children("rsp");
@@ -296,6 +304,7 @@ var populateLists = function () {
 	$("#showNewTaskPane").children(".nolink:first").hide();
 	$("#showNewTaskPane").children("a:first").show();
 
+	show_waiting(false);
 	$("#listsSection").show();
 	//addListItem(lists[l].id, lists[l].name);
 };
@@ -374,6 +383,40 @@ var rtmCall = function (methName, args, xml) {
 	var ajaxArgs = (args == null) ? {} : args;
 	var asXML = (typeof(xml) == "undefined") ? false : true;
 	
+	var ret = checkAuthSetup();
+	if(ret.stat == "failure")
+		return ret;
+
+	ajaxArgs.method = methName;
+
+	return {stat: "success", data: rtmAjax(gRTMMethUrl, ajaxArgs, asXML)};
+};
+
+/*
+an experiment in doing the above call asynchronously
+*/
+
+var rtmCallAsync = function (methName, args, asXML, callback) {
+	var ajaxArgs = (args == null) ? {} : args;
+	
+	var ret = checkAuthSetup();
+	if(ret.stat == "failure")
+		return ret;
+
+	ajaxArgs.method = methName;
+
+	/*
+	imitating our own little partial here....
+	*/
+	rtmAjax(gRTMMethUrl, ajaxArgs, asXML, function (r, t) { rtmCallSyncEnd.call(null, r, t, callback); });
+};
+
+var rtmCallSyncEnd = function (ret, txt, continueFunc) {
+	log("got back form async ajax with status " + txt);
+	continueFunc({stat: "success", data: ret});
+};
+
+var checkAuthSetup = function () {
 	/*
 	first check token status
 
@@ -415,9 +458,7 @@ var rtmCall = function (methName, args, xml) {
 
 	$("#needToAuth").hide(); // just in case
 
-	ajaxArgs.method = methName;
-
-	return {stat: "success", data: rtmAjax(gRTMMethUrl, ajaxArgs, asXML)};
+	return {stat: "success"};
 };
 
 var regenToken = function () {
@@ -529,7 +570,7 @@ var setupNewAuth = function() {
 /*
 the interface that actually takes care of doing the AJAX call
 */
-var rtmAjax = function (url, data, asXML) {
+var rtmAjax = function (url, data, asXML, callback) {
 	if(typeof(data) != "object") return "Need a data object";
 	if(typeof(data.method) == "undefined") return "Need a method name";
 
@@ -538,19 +579,36 @@ var rtmAjax = function (url, data, asXML) {
 
 	data.api_key = gRTMAPIKey;
 	data.format = (asXML == true) ? "rest" : "json";
+	var dataType = (asXML == true) ? "xml" : "json";
 	if(gRTMAuthToken != null && gRTMAuthToken.length > 0) data.auth_token = gRTMAuthToken;
 	rtmSign(data);
+	
+	if(typeof(callback) == "function") {
+		log("sending asynchronously");
+		$.ajax ({
+			async: true,
+			url: url,
+			data: data,
+			dataType: dataType,
+			complete: function () { log("async call completed"); },
+			success: callback,
+			error: function (req, stat, exc) {
+				log("<span class='error'>ERROR: " + String(req) + "<br/>" + stat + "</span>");
+			}
+		});
+	} else {
+		log("sending synchronously");
+		var retVal = $.ajax({
+			url: url,
+			data: data,
+			error: function (req, stat, exc) {
+				log("<span class='error'>ERROR: " + String(req) + "<br/>" + stat + "</span>");
+			}
+		});
 
-	var retVal = $.ajax({
-		url: url,
-		data: data,
-		error: function (req, stat, exc) {
-			log("<span class='error'>ERROR: " + String(req) + "<br/>" + stat + "</span>");
-		}
-	});
-
-	show_waiting(false);
-	return (asXML == true) ? retVal.responseXML : retVal.responseText;
+		show_waiting(false);
+		return (asXML == true) ? retVal.responseXML : retVal.responseText;
+	}
 };
 
 /*
@@ -584,12 +642,12 @@ var setupTaskPane = function (e) {
 	if(!newTask) {
 		// populate name, date, tags, extraInfo
 		var par_li = $(e.target).parents("li:first");
-		name = par_li.children(".title").children("a").html();
+		name = par_li.children(".title").children("a").html().replace("&amp;", "&", "g").replace("&lt;", "<", "g").replace("&gt;", ">", "g");
 		date = par_li.children(".due").html();
 		tags = par_li.children(".tags").html();
 
-		$("#taskPane > .extraInfo").html(par_li.children(".task_chk").attr("id").replace("taskchk_", ""));
-		log("extraInfo: " + $("#taskPane > .extraInfo").html());
+		$("#taskPane > .extraInfo").val(par_li.children(".task_chk").attr("id").replace("taskchk_", ""));
+		log("extraInfo: " + $("#taskPane > .extraInfo").val());
 		pane_top = par_li.offset().top - ($("#taskPane").height() / 3);
 	}
 	/* 
@@ -613,6 +671,7 @@ var setupTaskPane = function (e) {
 
 	if(newTask) {
 		$("#taskPane > .taskTags").hide();
+		$("#taskPane > .taskList").show();
 		$("#taskPane").removeClass("taskEdit").addClass("taskAdd");
 		$("#taskPane > .taskList > label").html("Add to:");
 		$("#taskPane > #taskSubmit").click(addNewTask).val("Add task");
@@ -620,6 +679,7 @@ var setupTaskPane = function (e) {
 		$("#taskPane").slideDown(200);
 	} else {
 		$("#taskPane > .taskTags").show();
+		$("#taskPane > .taskList").hide();
 		$("#taskPane").removeClass("taskAdd").addClass("taskEdit");
 		$("#taskPane > .taskList > label").html("List:");
 		$("#taskPane > #taskSubmit").click(updateTask).val("Update task");
@@ -711,13 +771,13 @@ var addNewTask = function (e) {
 	rtmCall("rtm.tasks.add", args);
 
 	hideTaskPane();
-	window.setTimeout(populateTasks, 0);
+	populateTasks();
 };
 
 var updateTask = function (e) {
 	log("we'd be updating the task here");
 
-	var extraInfo = $("#taskPane > .extraInfo").html().split("_");
+	var extraInfo = $("#taskPane > .extraInfo").val().split("_");
 	var attr;
 	log("task info: " + extraInfo.join(", "));
 
@@ -764,7 +824,7 @@ var updateTask = function (e) {
 	log("finished with updates");
 
 	hideTaskPane();
-	window.setTimeout(populateTasks, 0);
+	populateTasks();
 };
 
 var prepUndo = function(id) {
@@ -789,7 +849,7 @@ var doUndo = function(e) {
 	var res = rtmCall("rtm.transactions.undo", args);
 	$("#undoPane").hide();
 
-	window.setTimeout(populateTasks, 0);
+	populateTasks();
 
 	return false;
 };
@@ -981,6 +1041,8 @@ var setup = function () {
 
 	log("entering setup");
 
+	//Functional.install();
+
 	$.ajaxSetup({
 		async:false,
 		type:"GET",
@@ -1030,6 +1092,9 @@ var setup = function () {
 	$("#taskPane > .taskName > input").keyup(updateTaskPane);
 	$("#taskPane > #taskCancel").click(hideTaskPane);
 
+	/*
+	fancy link coloring
+	*/
 	/*
 	debug stuff
 	*/
