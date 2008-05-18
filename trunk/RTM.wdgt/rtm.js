@@ -14,7 +14,6 @@ this stuff is for when I start snazzing this up apple-style
 */
 var gInfoBtn;
 var gDoneBtn;
-var gDEBUG = true;
 
 
 /*  
@@ -35,10 +34,22 @@ var gUndoTimerId;
 var gTagList = [];
 
 /*
+a counting semaphore, controlling progress where multiple asynchronous calls are concerned
+*/
+var gInProgress;
+
+/*
 Hey, *here's* something for i18n!
 */
 var gMonths = ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
 var gDays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+/*
+miscellaneous
+*/
+//var gDEBUG = true;
+var gAppVersion = "caribou";
+
 
 var showPrefs = function () { 
 	if(window.widget)
@@ -379,9 +390,9 @@ this method automatically fills in:
  - format == json
 
 */
-var rtmCall = function (methName, args, xml) { 
+var rtmCall = function (methName, args, asXML) { 
 	var ajaxArgs = (args == null) ? {} : args;
-	var asXML = (typeof(xml) == "undefined") ? false : true;
+	asXML = (typeof(asXML) != "boolean") ? false : asXML;
 	
 	var ret = checkAuthSetup();
 	if(ret.stat == "failure")
@@ -398,6 +409,7 @@ an experiment in doing the above call asynchronously
 
 var rtmCallAsync = function (methName, args, asXML, callback) {
 	var ajaxArgs = (args == null) ? {} : args;
+	asXML = (typeof(asXML) != "boolean") ? false : asXML;
 	
 	var ret = checkAuthSetup();
 	if(ret.stat == "failure")
@@ -416,6 +428,10 @@ var rtmCallSyncEnd = function (ret, txt, continueFunc) {
 	continueFunc({stat: "success", data: ret});
 };
 
+
+/*
+a shared code path for both rtmCall && rtmCallAsync
+*/
 var checkAuthSetup = function () {
 	/*
 	first check token status
@@ -461,6 +477,9 @@ var checkAuthSetup = function () {
 	return {stat: "success"};
 };
 
+/*
+try getting a new auth_token if we need it
+*/
 var regenToken = function () {
 	log("getting fresh token");
 
@@ -486,7 +505,7 @@ var regenToken = function () {
 };
 
 /*
-a singleton message for the frob item
+a singleton method for the frob item
 */
 var rtmGetFrob = function () {
 	if(checkHaveFrob()) {
@@ -520,6 +539,10 @@ var checkHaveFrob = function () {
 	return (widget.preferenceForKey("frob") != "undefined" && typeof(widget.preferenceForKey("frob")) != "undefined");
 };
 
+
+/*
+attempt to retrieve a valid auth_token and store it in our prefs
+*/
 var rtmAuth = function () {
 	if(!checkHaveFrob())
 		return false;
@@ -601,12 +624,14 @@ var rtmAjax = function (url, data, asXML, callback) {
 		var retVal = $.ajax({
 			url: url,
 			data: data,
+			dateType: dataType,
 			error: function (req, stat, exc) {
 				log("<span class='error'>ERROR: " + String(req) + "<br/>" + stat + "</span>");
 			}
 		});
 
 		show_waiting(false);
+		log("rtmAjax return value:\n" + ((asXML == true) ? retVal.responseXML : retVal.responseText));
 		return (asXML == true) ? retVal.responseXML : retVal.responseText;
 	}
 };
@@ -697,7 +722,7 @@ var setupTaskPane = function (e) {
 	$("#showNewTaskPane").children("a:first").hide();
 	*/
 
-	$("#taskPane > .taskName > input").focus();
+	$("#taskPane > .taskName > input.user").focus();
 
 	return false;
 };
@@ -756,22 +781,23 @@ var updateTaskPane = function (e) {
 };
 
 var addNewTask = function (e) {
-	log("new task name: " + $("#newTaskName").val());
+	log("new task name: " + $("#taskPane > .taskName > .user").val());
 
-	var args = {name: $("#newTaskName").val(), timeline: rtmTimeline()};
-	if($("#newTaskDueDate").val().length > 0) {
-		args.name = args.name + " " + $("#newTaskDueDate").val();
+	var args = {name: $("#taskPane > .taskName > .user").val(), timeline: rtmTimeline()};
+	if($("#taskPane > .taskDueDate > .user").val().length > 0) {
+		args.name = args.name + " " + $("#taskPane > .taskDueDate > .user").val();
 		args.parse = "1";
 	}
-	var sel_list_id = $("#newTaskList_list").get(0).options[$("#newTaskList_list").get(0).selectedIndex].id.split("_")[1];
+	var sel_list_id = $("#taskPane > .taskList > span > select").get(0).options[$("#taskPane > .taskList > span > select").get(0).selectedIndex].id.split("_")[1];
 	if(Number(sel_list_id) > 0) {
 		args.list_id = String(sel_list_id);
 	}
 	
-	rtmCall("rtm.tasks.add", args);
-
+	/*rtmCall("rtm.tasks.add", args);
 	hideTaskPane();
-	populateTasks();
+	populateTasks();*/
+	$("#taskPane > #taskSubmit").attr("disabled", true);
+	rtmCallAsync("rtm.tasks.add", args, false, function(r, t) { log("task add returned with status " + t); hideTaskPane(); populateTasks(); } );
 };
 
 var updateTask = function (e) {
@@ -783,8 +809,15 @@ var updateTask = function (e) {
 
 	/*
 	attr needs to be defined new each time; leftover attributes get passed in the URL as 'attr=null'
+
+	doing it with a semaphore; we really *should* set up the total count before hand, instead of 
+	relying on the fact that the Async call will take longer than the test for the next condition 
+	to make sure we don't continue prematurely....
 	*/
+	gInProgress = 0;
 	if($("#taskPane > .taskName > input.user").val() != $("#taskPane > .taskName > input.orig").val()) {
+		gInProgress += 1;
+		$("#taskPane > #taskSubmit").attr("disabled", true);
 		attr = {
 			timeline: rtmTimeline(),
 			list_id: extraInfo[0],
@@ -793,9 +826,11 @@ var updateTask = function (e) {
 			name: $("#taskPane > .taskName > input.user").val()
 			};
 		log("updating task name to " + attr.name);
-		rtmCall("rtm.tasks.setName", attr);
+		rtmCallAsync("rtm.tasks.setName", attr, false, updateTaskContinue);
 	}
 	if($("#taskPane > .taskDueDate > input.user").val() != $("#taskPane > .taskDueDate > input.orig").val()) {
+		gInProgress += 1;
+		$("#taskPane > #taskSubmit").attr("disabled", true);
 		attr = {
 			timeline: rtmTimeline(),
 			list_id: extraInfo[0],
@@ -808,9 +843,11 @@ var updateTask = function (e) {
 			attr.parse = "1";
 		} else { log("no due date..."); }
 		log("updating due date to " + attr.due);
-		rtmCall("rtm.tasks.setDueDate", attr);
+		rtmCallAsync("rtm.tasks.setDueDate", attr, false, updateTaskContinue);
 	}
 	if($("#taskPane > .taskTags > input.user").val() != $("#taskPane > .taskTags > input.orig").val()) {
+		gInProgress += 1;
+		$("#taskPane > #taskSubmit").attr("disabled", true);
 		attr = {
 			timeline: rtmTimeline(),
 			list_id: extraInfo[0],
@@ -819,12 +856,26 @@ var updateTask = function (e) {
 			tags: $("#taskPane > .taskTags > input.user").val()
 			};
 		log("updating tags to " + attr.tags);
-		rtmCall("rtm.tasks.setTags", attr);
+		rtmCallAsync("rtm.tasks.setTags", attr, false, updateTaskContinue);
 	}
-	log("finished with updates");
 
-	hideTaskPane();
-	populateTasks();
+	log("finished sending off updates");
+};
+
+/*
+only continue if all three are done
+*/
+var updateTaskContinue = function () {
+	gInProgress -= 1;
+	
+	if(gInProgress < 1) {
+		log("all three updates are complete!");
+
+		hideTaskPane();
+		populateTasks();
+	} else {
+		log(String(gInProgress) + " more to go...");
+	}
 };
 
 var prepUndo = function(id) {
@@ -882,7 +933,7 @@ var rtmSign = function (args) {
 	log("sending off for hash...");
 	var sig = $.ajax({
 		url: url,
-		data: {args: normStr},
+		data: {args: normStr, ver: gAppVersion},
 		error: function (req, stat, exc) {
 			log("<span class='error'>ERROR: " + String(req) + "<br/>" + stat + "</span>");
 		}
@@ -1113,6 +1164,7 @@ var setup = function () {
 		$(".hideOnLoad").show();
 		buildFront();
 		$("body").css("background-color", "#000044'");
+		$("#undoPane").show();
 	}
 	
 	log("setup done");
