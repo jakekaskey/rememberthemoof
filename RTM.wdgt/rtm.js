@@ -31,7 +31,6 @@ var gRTMTimelineId = -1;
 var gLastTransId = "0";
 var gCurrentList = 0;
 var gUndoTimerId;
-var gTagList = [];
 
 /*
 a counting semaphore, controlling progress where multiple asynchronous calls are concerned
@@ -158,10 +157,12 @@ var populateTasksContinue = function (tasks) {
 	var tags;
 	var cur_ts;
 	var cur_task;
+	var cur_tag;
 	var task_list = [];
 	var cur_list_id;
 	var task_obj;
 	var task;
+	var allTags = [];
 	// log("======================\nparsing lists:");
 	for(var l in lists) {	
 		cur_list = $(lists[l]);
@@ -179,9 +180,11 @@ var populateTasksContinue = function (tasks) {
 				var pos_tags = cur_ts.children("tags").children("tag");
 				if(pos_tags.length > 0) {
 					for(var t in pos_tags.get()) {
-						log("fetching tag " + String(t));
-						tags.push($(pos_tags.get()[t]).text());
-						gTagList.push($(pos_tags.get()[t]).text());
+						var cur_tag = $(pos_tags.get()[t]).text();
+						log("fetching tag " + String(t) + ", " + cur_tag);
+						tags.push(cur_tag);
+						if($.inArray(cur_tag, allTags) < 0)
+							allTags.push(cur_tag);
 					}
 					log("tags: " + tags)
 				}
@@ -207,6 +210,12 @@ var populateTasksContinue = function (tasks) {
 	$.each(task_list, addTaskToList);
 
 	/*
+	tag setup
+	*/
+	refreshTagList(allTags);
+	$("#tagList").hide();
+
+	/*
 	this only matters the first time, so it'd be *really* nice to have it in some sort of
 	chained-function capability (chain it in the setup routine)....
 	*/
@@ -215,46 +224,11 @@ var populateTasksContinue = function (tasks) {
 	$("#taskSection").show();
 	$(".taskEdit").click(setupTaskPane);
 
-	/*
-	testing: can we reset the widget?
-	*/
 	makeWindowFit($("#front"));
 //	$("#listid").html(tasks.list.id);
 	//log("taskList has " + $("#taskList").children("li").length + " children");
 };
 
-/*
-compare function for sorting {due:due, task:cur_task}
-*/
-var rtmDueSort = function(task1, task2) {
-	//log(task1.task.name + " due " + task1.due + ", " + task2.task.name + " due " + task2.due);
-	if(typeof(task1.due) == "undefined" ) {
-		if(typeof(task2.due) == "undefined") {
-			/* 
-			sort lexicographically
-			*/
-			return ((task1.task.name[0].toLowerCase() == task2.task.name[0].toLowerCase()) ? 0 :
-					((task1.task.name[0].toLowerCase() < task2.task.name[0].toLowerCase()) ? -1 : 1))
-		} else {
-			/*
-			undefined's take precedence
-			*/
-			return -1
-		}
-	} else {
-		if(typeof(task2.due) == "undefined") {
-			return 1;
-		}
-	}
-
-	/*
-	undefined's are out of the way, now actually sort the dates
-	*/
-	var task1_date = rtmNormalizeDateStr(String(task1.due));
-	var task2_date = rtmNormalizeDateStr(String(task2.due));
-	return ((task1_date.getTime() == task2_date.getTime()) ? 0 :
-			((task1_date.getTime() < task2_date.getTime()) ? -1 : 1));
-};
 /*
 creates a list item for a task, called mainly from populateTasks()
 */
@@ -280,15 +254,117 @@ var addTaskToList = function() {  // this == {due:due task:{list_id, name, ts_id
 	newItem.children(".task_chk").attr("name", "taskchk_" + list_id + "_" + taskseries_id + "_" + task_id);
 	newItem.children(".task_chk").attr("id", "taskchk_" + list_id + "_" + taskseries_id + "_" + task_id);
 	newItem.children(".task_chk").change(markTaskDone);
-	//log("appending newItem");
+	if(tags.split(",").length > 0 && tags.split(",")[0].length > 0) {
+		for(var t in tags.split(",")) {
+			log("adding tag tag_" + tags.split(",")[t] + " to item " + name);
+			newItem.addClass("tag_" + tags.split(",")[t]);
+		}
+		log("total class value for " + name + ": " + newItem.attr("class"));
+	}
+		
 	$("#taskList").append(newItem);
-	//log("showing newItem");
 
 	newItem.show();
 	
 	log("appended item " + name + ", due " + due + " with id " + task_id);
 };
 
+/*
+refresh the tag list at top after repopulating task list
+*/
+var refreshTagList = function (tags) {
+	log("refreshing tag list");
+	$("#tagList > ul").empty();
+	addTagListItem.call(String("all"));
+
+	$.each(tags, addTagListItem);
+
+	$("#tagPop > .shown").empty();
+	$("#tagPop > .shown").append($("<a href=''>all</a>"));
+	$("#tagPop > .shown > a").click(doTagPop);
+
+	log("tag list refreshed");
+};
+
+/*
+create/append new tag list item
+*/
+var addTagListItem = function () {
+	var name = this;
+	var newli = $("#tagListTemplate").clone().empty();
+	log("adding " + name + " to tag list");
+
+	newli.attr("id", "tagList_" + name);
+	newli.append($("<a href=''>" + name + "</a>"));
+	newli.children("a").hover(tagListOver, tagListOut);
+	newli.children("a").click(tagShowOnly);
+	newli.show();
+
+	$("#tagList > ul").append(newli);
+};
+
+var tagListOver = function () { 
+	var tagName = $(this).parent("li:first").attr("id").split("_")[1];
+
+	$("#taskList > li").removeClass("hilite");
+	if(tagName == "all") {
+		log("showing all tasks");
+		$("#taskList > li").addClass("hilite");
+	} else {
+		log("hiliting only tag: tag_" + tagName);
+		log(String($("#taskList > li.tag_" + tagName).length) + " culprits found");
+		$("#taskList > li.tag_" + tagName).each(function (i) {
+				log("hiliting item " + String(i));
+				log("adding hilite class to " + $(this).children(".title > a").text());
+				$(this).addClass("hilite");
+			} );
+	}
+};
+var tagListOut = function () {
+	return;
+};
+/*
+filter items in the tasklist to only show ones with this tag
+*/
+var tagShowOnly = function (e) {
+	var tagName = $(e.target).text();
+	log("filter task items for tag " + tagName);
+
+	$("#taskList > li").removeClass("hilite");
+	if(tagName == "all") {
+		$("#taskList > li").show();
+	} else {
+		$("#taskList > li").hide();
+		$("#taskList > li.tag_" + tagName + "").each(function () {
+				log("matched " + $(this).children("span.title").text());
+				$(this).show();
+			} );
+	}
+
+	$("#tagPop > .shown >  a").text(tagName);
+	$("#tagList").hide();
+
+	makeWindowFit($("#front"));
+
+	return false;
+};
+
+/*
+show list of tags when current tag label is clicked
+*/
+var doTagPop = function (e) {
+	log("showing tag list");
+	$("#tagList").css({top: $("#tagPop").offset().top, left: $("#tagPop > .shown").offset().left});
+	
+	$("#tagList").slideDown(100, function () { makeWindowFit($("#front")); } );
+
+	return false;
+};
+
+
+/*
+start task list population
+*/
 var populateLists = function () {
 	log("populating lists popup");
 	show_waiting(true);
@@ -1031,6 +1107,39 @@ var parseRTMDate = function(d, has_due_time) {
 	return date_str;
 };
 
+/*
+comparison function for sorting {due:due, task:cur_task}
+*/
+var rtmDueSort = function(task1, task2) {
+	//log(task1.task.name + " due " + task1.due + ", " + task2.task.name + " due " + task2.due);
+	if(typeof(task1.due) == "undefined" ) {
+		if(typeof(task2.due) == "undefined") {
+			/* 
+			sort lexicographically
+			*/
+			return ((task1.task.name[0].toLowerCase() == task2.task.name[0].toLowerCase()) ? 0 :
+					((task1.task.name[0].toLowerCase() < task2.task.name[0].toLowerCase()) ? -1 : 1))
+		} else {
+			/*
+			undefined's take precedence
+			*/
+			return -1
+		}
+	} else {
+		if(typeof(task2.due) == "undefined") {
+			return 1;
+		}
+	}
+
+	/*
+	undefined's are out of the way, now actually sort the dates
+	*/
+	var task1_date = rtmNormalizeDateStr(String(task1.due));
+	var task2_date = rtmNormalizeDateStr(String(task2.due));
+	return ((task1_date.getTime() == task2_date.getTime()) ? 0 :
+			((task1_date.getTime() < task2_date.getTime()) ? -1 : 1));
+};
+
 var openAuthUrl = function (e) {
 	var authUrl = gRTMAuthUrl + "?";
 	var frobStr = rtmGetFrob();
@@ -1059,7 +1168,10 @@ var genericUrlOpen = function(url) {
 };
 
 var show_waiting = function (show) {
-	document.getElementById("waitIcon").style.display = (show == true) ? "block" : "none";
+	if(show)
+		$("#waitIcon > img").show();
+	else
+		$("#waitIcon > img").hide();
 };
 
 /*
@@ -1103,8 +1215,20 @@ var makeWindowFit = function(el) {
 
 			log("taskpane dims: w=" + tp_dims.w + ", h=" + tp_dims.h);
 
-			if(tp_dims.h + $("#taskPane").offset().top > newdims.h)	newdims.h = tp_dims.h + $("#taskPane").offset().top;
+			if(tp_dims.h + $("#taskPane").offset().top > newdims.h) newdims.h = tp_dims.h + $("#taskPane").offset().top;
 			if(tp_dims.w + $("#taskPane").offset().left > newdims.w) newdims.w = tp_dims.w + $("#taskPane").offset().left;
+		}
+		if($("#tagList").css("display") != "none") {
+			/*
+			same for tagList
+			*/
+			var tl_dims = {w: $("#tagList").width(), h: $("#tagList").height()};
+			adjustForPadMarg.call($("#tagList"), tl_dims);
+
+			log("taglist dims: w=" + tl_dims.w + ", h=" + tl_dims.h);
+
+			if(tl_dims.h + $("#tagList").offset().top > newdims.h) newdims.h = tl_dims.h + $("#tagList").offset().top;
+			if(tl_dims.w + $("#tagList").offset().left > newdims.w) newdims.w = tl_dims.w + $("#tagList").offset().left;
 		}
 
 		log("resizing to: w=" + newdims.w + ", h=" + newdims.h);
@@ -1164,12 +1288,12 @@ var setup = function () {
 		/*
 		apple-gooey setup here
 		*/
-	}
 		gInfoBtn = new AppleInfoButton($("#infoButton").get(0), $("#front").get(0), "black", "black", showPrefs);
 		gDoneBtn = new AppleGlassButton($("#doneBtn").get(0), "back", hidePrefs);
 		// correct apple's draconian positioning
 		var info_img = $("#infoButton").children("img:first");
 		$("#infoButton").css({position: "relative", width: info_img.attr("width"), height:info_img.attr("height")}); 
+	}
 	
 	/*********
 	connect all of the events
@@ -1214,6 +1338,9 @@ var setup = function () {
 		buildFront();
 		$("body").css("background-color", "#000044'");
 		$("#undoPane").show();
+		$("#tagList").show();
+		addTagListItem.call(String("test1"));
+		addTagListItem.call(String("test2"));
 	}
 	
 	log("setup done");
