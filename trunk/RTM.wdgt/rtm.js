@@ -31,6 +31,7 @@ var gRTMTimelineId = -1;
 var gLastTransId = "0";
 var gCurrentList = 0;
 var gUndoTimerId;
+var gOverlays = [];
 
 /*
 a counting semaphore, controlling progress where multiple asynchronous calls are concerned
@@ -354,6 +355,8 @@ show list of tags when current tag label is clicked
 */
 var doTagPop = function (e) {
 	log("showing tag list");
+
+	overlayHideAndSet("tagList");
 	$("#tagList").css({top: $("#tagPop").offset().top, left: $("#tagPop > .shown").offset().left});
 	
 	$("#tagList").slideDown(100, function () { makeWindowFit($("#front")); } );
@@ -778,6 +781,8 @@ var setupTaskPane = function (e) {
 	$("#taskPane > #taskSubmit").unbind("click");
 	$("#taskPane").css("top", pane_top);
 
+	overlayHideAndSet("taskPane");
+
 	if(newTask) {
 		$("#taskPane > .taskTags").hide();
 		$("#taskPane > .taskList").show();
@@ -1172,6 +1177,20 @@ var show_waiting = function (show) {
 		$("#waitIcon > img").show();
 	else
 		$("#waitIcon > img").hide();
+};
+
+/*
+manage single-spot overlay paradigm
+*/
+var overlayHideAndSet = function(new_ol) {
+	if(gOverlays.length > 0) {
+		for(var i in gOverlays) {
+			var ol_name = gOverlays.shift();
+			log("hiding overlay " + ol_name);
+			$("#" + ol_name).hide();
+		}
+	}
+	gOverlays.push(new_ol);
 };
 
 /*
