@@ -22,51 +22,66 @@
 
 <div id="mainWrapper">
 	<div id="front">
-		<div class="section" id="splashSection">
-			<img id="splashPane" src="Default.png" />
-		</div>
-		<div class="section">
-			<textarea rows="10" id="evenMore">
-			</textarea>
-		</div>
-		<div class="section hideOnLoad" id="listsSection">
-		</div>
-		<div class="section hideOnLoad" id="needToAuth">
-			<a href="">Click here</a> to authorize this app with your RTM account.
-		</div>
-		<div class="section hideOnLoad" id="taskSection">
-			<div>
-				<span class="left"><a href="" class="goToRTM"><img style="height: 12pt; border: 0;" src="files/rtm_logo_sm.png" /></a></span>
-				<span class="left"><h3>Tasks</h3></span>
-				<div id="waitIcon" class="left"><img src="./ajax-loader.gif" /></div>
-				<span id="undoPane" class="left"><a href="" id="undoBtn">undo</a></span>
-				<span class="right linkAsBtn" id="showNewTaskPane"><span class="nolink">Add task</span><a href="" class="taskAdd">Add task</a></span>
+		<div id="topEdge">
+		<div id="bottomEdge">
+		<div id="framedContent">
+			<div class="section" id="splashSection">
+				<img id="splashPane" src="Default.png" />
+			</div>
+			<div class="section">
+				<textarea rows="10" id="evenMore">
+				</textarea>
+			</div>
+			<div class="section hideOnLoad" id="listsSection">
+			</div>
+			<div class="section hideOnLoad" id="needToAuth">
+				<a href="">Click here</a> to authorize this app with your RTM account.
+			</div>
+			<div class="section hideOnLoad" id="taskSection">
+				<div>
+					<span class="left"><a href="" class="goToRTM"><img style="height: 12pt; border: 0;" src="files/rtm_logo_sm.png" /></a></span>
+					<span class="left"><h3>Tasks</h3></span>
+					<span id="waitIcon" class="left"><img src="./ajax-loader.gif" /></span>
+					<span id="undoPane" class="left"><a href="" id="undoBtn">undo</a></span>
+					<span class="right linkAsBtn" id="showNewTaskPane"><span class="nolink">Add task</span><a href="" class="taskAdd">Add task</a></span>
+					<div style="clear: both;"></div>
+					<div id="listSection" class="left">
+						<span>List:</span> <select id="lists"></select>
+						<span id="tagPop"><span class="prompt">Tags: </span><span class="shown"></span></span>
+					</div>
+					<div style="clear: both;"></div>
+					<ul id="taskList">
+	<li><input type="checkbox" class="task_chk" name="" /><span class="title">titletitletitletitletitletitletitletitletitletitletitle</span><span class="due">ddueduedueduedueduedueduedueduedueduedueduedueue</span><span class="tags">tags</span><div style="clear: both;"></div></li>
+	<li><input type="checkbox" class="task_chk" name="" /><span class="title">title title title title title title title title title title title </span><span class="due">dueduedueue</span><span class="tags">tags</span><div style="clear: both;"></div></li>
+	<li ><input type="checkbox" class="task_chk" name="" /><span class="title"><a href="" class="taskEdit">title</a></span><span class="due"></span><span class="tags">tags</span><div style="clear: both;"></div></li>
+	<li ><input type="checkbox" class="task_chk" name="" /><span class="title"><a href="" class="taskEdit">title</a></span><span class="due"></span><span class="tags">tags</span><div style="clear: both;"></div></li>
+					</ul>
+				</div>
+			</div>
+			<div class="section" id="infoSection">
+				<div class="right" id="infoButton"></div>
+				<span class="right"><!-- input type="submit" value="back" id="showprefsbtn" / --></span>
 				<div style="clear: both;"></div>
-				<div id="listSection" class="left"><span>List:</span> <select id="lists"></select></div>
-				<ul id="taskList">
-<li><input type="checkbox" class="task_chk" name="" /><span class="title">title</span><span class="due">ddueduedueduedueduedueduedueduedueduedueduedueue</span><span class="tags">tags</span><div style="clear: both;"></div></li>
-<li><input type="checkbox" class="task_chk" name="" /><span class="title">title</span><span class="due">dueduedueue</span><span class="tags">tags</span><div style="clear: both;"></div></li>
-<li ><input type="checkbox" class="task_chk" name="" /><span class="title"><a href="" class="taskEdit">title</a></span><span class="due"></span><span class="tags">tags</span><div style="clear: both;"></div></li>
-<li ><input type="checkbox" class="task_chk" name="" /><span class="title"><a href="" class="taskEdit">title</a></span><span class="due"></span><span class="tags">tags</span><div style="clear: both;"></div></li>
+			</div>
+
+			<!-- independently floated -->
+			<div id="taskPane" class="hideOnLoad">
+				<span class="taskList"><label>googly</label> <span></span></span>
+				<span class="taskName"><label>Name:</label> <input type="text" class="user" /><input type="hidden" class="orig" /></span>
+				<span class="taskDueDate"><label>Due:</label> <input type="text" class="user" /><input type="hidden" class="orig" /></span>
+				<span class="taskTags"><label>Tags:</label> <input type="text" class="user" /><input type="hidden" class="orig" /></span>
+				<input type="hidden" class="extraInfo" />
+				<input type="submit" id="taskCancel" value="Never mind"/>&nbsp;&nbsp;<input type="submit" id="taskSubmit" value="googly" disabled="true" />
+			</div>
+			<div id="tagList">
+				<ul>
+					<li><span class="name"><a href="">a tag</a></span></li>
 				</ul>
 			</div>
-		</div>
-		<div class="section" id="infoSection">
-			<div class="right" id="infoButton"></div>
-			<span class="right"><!-- input type="submit" value="back" id="showprefsbtn" / --></span>
 			<div style="clear: both;"></div>
 		</div>
-
-		<!-- independently floated -->
-		<div id="taskPane" class="hideOnLoad">
-			<span class="taskList"><label>googly</label> <span></span></span>
-			<span class="taskName"><label>Name:</label> <input type="text" class="user" /><input type="hidden" class="orig" /></span>
-			<span class="taskDueDate"><label>Due:</label> <input type="text" class="user" /><input type="hidden" class="orig" /></span>
-			<span class="taskTags"><label>Tags:</label> <input type="text" class="user" /><input type="hidden" class="orig" /></span>
-			<input type="hidden" class="extraInfo" />
-			<input type="submit" id="taskCancel" value="Never mind"/>&nbsp;&nbsp;<input type="submit" id="taskSubmit" value="googly" disabled="true" />
 		</div>
-		<div style="clear: both;"></div>
+		</div>
 	</div>
 
 	<div id="back">
@@ -100,6 +115,8 @@
 		<div style="clear: both;"></div>
 	</div>
 </div>
+
+<li id="tagListTemplate"></li>
 
 <li id="itemTemplate"><input type="checkbox" class="task_chk" name="" /><span class="title"></span><span class="due"></span><span class="tags"></span><div style="clear: both;"></div></li>
 
