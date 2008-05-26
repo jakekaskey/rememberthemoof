@@ -28,9 +28,8 @@ var gRTMMethUrl = "http://api.rememberthemilk.com/services/rest/";
 var gRTMAuthToken;
 var gRTMUserId;
 var gRTMTimelineId = -1;
-var gLastTransId = "0";
 var gCurrentList = 0;
-var gUndoTimerId;
+var gUndoStack = [];  // [[timer_id, trans_id], ..]
 var gOverlays = [];
 
 /*
@@ -47,7 +46,7 @@ var gDays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', '
 /*
 miscellaneous
 */
-//var gDEBUG = true;
+var gDEBUG = true;
 var gAppVersion = "caribou";
 
 
@@ -443,10 +442,8 @@ var buildFront = function () {
 	populateLists();
 	populateTasks();
 
-	if(gUndoTimerId != null) {
-		window.clearTimeout(gUndoTimerId);
-		gUndoTimerId = null;
-	}
+	while(gUndoStack.length > 0) window.clearTimeout(gUndoStack.pop()[0]); // [[timer_id, trans_id], ..]
+
 	$("#undoPane").hide();
 
 	return;
@@ -693,6 +690,13 @@ var rtmAjax = function (url, data, asXML, callback) {
 	if(gRTMAuthToken != null && gRTMAuthToken.length > 0) data.auth_token = gRTMAuthToken;
 	rtmSign(data);
 	
+	if(!window.widget) {
+		try {
+			netscape.security.PrivilegeManager.enablePrivilege("UniversalBrowserRead");
+		} catch (e) {
+			log("Permission UniversalBrowserRead denied.");
+		}
+	}
 	if(typeof(callback) == "function") {
 		log("sending asynchronously");
 		$.ajax ({
@@ -896,6 +900,7 @@ var updateTask = function (e) {
 
 	/*
 	attr needs to be defined new each time; leftover attributes get passed in the URL as 'attr=null'
+	SOLUTION: clean up the object with the 'delete' command, e.g.  'delete attr.name;'
 
 	doing it with a semaphore; we really *should* set up the total count before hand, instead of 
 	relying on the fact that the Async call will take longer than the test for the next condition 
@@ -966,30 +971,39 @@ var updateTaskContinue = function () {
 };
 
 var prepUndo = function(id) {
-	gLastTransId = id;
-
 	$("#undoPane").show();
-	if(gUndoTimerId != null) {
-		window.clearTimeout(gUndoTimerId);
-	}
 
-	gUndoTimerId = window.setTimeout(function() { $("#undoPane").hide(); gUndoTimerId = null; }, 30000);	
+	var timer_id  = window.setTimeout(trimUndoStack, 30000);	
+	gUndoStack.push(new Array(timer_id, id));
+	log("new undo added to stack");
 };
 
 var doUndo = function(e) {
-	if(Number(gLastTransId) < 1)
-		return;
+	if(gUndoStack.length < 1) return false;
+
+	var lastUndo = gUndoStack.pop();
+	window.clearTimeout(lastUndo[0]);
+	log("one undo cleared");
+
 	var args = {
-		transaction_id: String(gLastTransId),
+		transaction_id: String(lastUndo[1]),
 		timeline: rtmTimeline()
 	};
 		
 	var res = rtmCall("rtm.transactions.undo", args);
-	$("#undoPane").hide();
+	if(gUndoStack.length < 1) $("#undoPane").hide();
 
 	populateTasks();
 
 	return false;
+};
+
+var trimUndoStack = function () {
+	if(gUndoStack.length < 1) return;
+
+	gUndoStack.shift();
+	log("undo trimmed");
+	if(gUndoStack.length < 1) $("#undoPane").hide();
 };
 
 
@@ -1000,7 +1014,7 @@ var rtmSign = function (args) {
 	var elArr = [];
 	var normStr = "";
 	// add port 786 (port RTM)
-	var url = "http://64.22.121.161:8786/signargs/";
+	var url = "http://64.22.121.161:786/signargs/";
 
 	for(var el in args) { elArr.push(el); }
 	elArr.sort();
@@ -1018,6 +1032,13 @@ var rtmSign = function (args) {
 	otherwise, the following code does a fine job of generating a signature remotely
 	*/
 	log("sending off for hash...");
+	if(!window.widget){
+		try {
+			netscape.security.PrivilegeManager.enablePrivilege("UniversalBrowserRead");
+		} catch (e) {
+			log("Permission UniversalBrowserRead denied.");
+		}
+	}
 	var sig = $.ajax({
 		url: url,
 		data: {args: normStr, ver: gAppVersion},
@@ -1146,9 +1167,12 @@ var rtmDueSort = function(task1, task2) {
 };
 
 var openAuthUrl = function (e) {
+	try {
 	var authUrl = gRTMAuthUrl + "?";
 	var frobStr = rtmGetFrob();
 	var args = {api_key: gRTMAPIKey, perms: "delete", frob: frobStr};
+
+	log("opening auth url");
 
 	rtmSign(args); 
 	for(var a in args) {
@@ -1156,20 +1180,21 @@ var openAuthUrl = function (e) {
 	}
 	//authUrl += "?api_key=" + gRTMAPIKey + "&perms=" + args.perms + "&frob=" + args.frob + "&api_sig=" + args.api_sig;
 
-	if(window.widget) {
-		log("opening "  + authUrl);
-		widget.openURL(authUrl);
-	} else {
-		log("would've opened this url: " + authUrl);
-	}
+	genericUrlOpen(authUrl);
+	} catch(e) { log("what??\n" + e); }
 
 	return false;
 };
 
 var genericUrlOpen = function(url) {
-	if(window.widget) {
-		widget.openURL(url);
-	}
+	try {
+		if(window.widget) {
+			widget.openURL(url);
+		} else {
+			if(window.open(url) == null)
+				log("something prevented the window from opening.");
+		}
+	} catch(e) { log("problem with urlopen:\n" + e); }
 };
 
 var show_waiting = function (show) {
@@ -1353,13 +1378,13 @@ var setup = function () {
 		/*
 		this stuff is all for debugging in a browser
 		*/
-		$(".hideOnLoad").show();
+	//	$(".hideOnLoad").show();
 		buildFront();
 		$("body").css("background-color", "#000044'");
-		$("#undoPane").show();
-		$("#tagList").show();
-		addTagListItem.call(String("test1"));
-		addTagListItem.call(String("test2"));
+	//	$("#undoPane").show();
+	//	$("#tagList").show();
+	//	addTagListItem.call(String("test1"));
+	//	addTagListItem.call(String("test2"));
 	}
 	
 	log("setup done");
