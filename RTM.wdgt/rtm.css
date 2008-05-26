@@ -50,12 +50,12 @@ ul {
 #front #taskList a:hover { color: #36c; }
 
 #topEdge {
-	background: url(edge_top.png) no-repeat top left transparent;
+	background: url(files/edge_top.png) no-repeat top left transparent;
 	width: 350px;
 	padding-top: 8px;
 }
 #bottomEdge {
-	background: url(edge_btm.png) no-repeat bottom left transparent;
+	background: url(files/edge_btm.png) no-repeat bottom left transparent;
 	width: 350px;
 	padding-bottom: 8px;
 }
