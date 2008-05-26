@@ -794,7 +794,7 @@ var setupTaskPane = function (e) {
 		$("#taskPane > .taskList > label").html("Add to:");
 		$("#taskPane > #taskSubmit").click(addNewTask).val("Add task");
 		$("#taskPane > #taskSubmit").attr("disabled", true);
-		$("#taskPane").slideDown(200, function() { makeWindowFit($("#front")); } );
+		$("#taskPane").slideDown(200, function() { makeWindowFit($("#front")); $("#taskPane > .taskName > input.user").focus(); } );
 	} else {
 		$("#taskPane > .taskTags").show();
 		$("#taskPane > .taskList").hide();
@@ -803,19 +803,8 @@ var setupTaskPane = function (e) {
 		$("#taskPane > #taskSubmit").click(updateTask).val("Update task");
 		$("#taskPane > #taskSubmit").attr("disabled", false);
 		
-		$("#taskPane").show(200, function () { makeWindowFit($("#front")); } );
+		$("#taskPane").show(200, function () { makeWindowFit($("#front")); $("#taskPane > .taskName > input.user").focus(); } );
 	}
-	/*
-	finally, position and show
-	*/
-	//$("#showNewTaskPane").attr("disabled", true);
-	//linkManip($("#showNewTaskPane").get(0), false);
-	/* come back to ths later
-	$("#showNewTaskPane").children(".nolink:first").show();
-	$("#showNewTaskPane").children("a:first").hide();
-	*/
-
-	$("#taskPane > .taskName > input.user").focus();
 
 	return false;
 };

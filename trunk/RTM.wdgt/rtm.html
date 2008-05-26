@@ -9,7 +9,7 @@
 @import "rtm.css";
 </style>
 
-<script type="text/javascript" src="jquery-1.2.3.min.js" />
+<script type="text/javascript" src="files/jquery-1.2.3.min.js" />
 <!-- the following is only necessary if the RTM shared key is in the javascript -->
 <!-- script type="text/javascript" src="md5.js" / -->
 <script type='text/javascript' src='/System/Library/WidgetResources/AppleClasses/AppleInfoButton.js' charset='utf-8'/>
@@ -41,7 +41,7 @@
 				<div>
 					<span class="left"><a href="" class="goToRTM"><img style="height: 12pt; border: 0;" src="files/rtm_logo_sm.png" /></a></span>
 					<span class="left"><h3>Tasks</h3></span>
-					<span id="waitIcon" class="left"><img src="./ajax-loader.gif" /></span>
+					<span id="waitIcon" class="left"><img src="files/ajax-loader.gif" /></span>
 					<span id="undoPane" class="left"><a href="" id="undoBtn">undo</a></span>
 					<span class="right linkAsBtn" id="showNewTaskPane"><span class="nolink">Add task</span><a href="" class="taskAdd">Add task</a></span>
 					<div style="clear: both;"></div>
@@ -51,10 +51,6 @@
 					</div>
 					<div style="clear: both;"></div>
 					<ul id="taskList">
-	<li><input type="checkbox" class="task_chk" name="" /><span class="title">titletitletitletitletitletitletitletitletitletitletitle</span><span class="due">ddueduedueduedueduedueduedueduedueduedueduedueue</span><span class="tags">tags</span><div style="clear: both;"></div></li>
-	<li><input type="checkbox" class="task_chk" name="" /><span class="title">title title title title title title title title title title title </span><span class="due">dueduedueue</span><span class="tags">tags</span><div style="clear: both;"></div></li>
-	<li ><input type="checkbox" class="task_chk" name="" /><span class="title"><a href="" class="taskEdit">title</a></span><span class="due"></span><span class="tags">tags</span><div style="clear: both;"></div></li>
-	<li ><input type="checkbox" class="task_chk" name="" /><span class="title"><a href="" class="taskEdit">title</a></span><span class="due"></span><span class="tags">tags</span><div style="clear: both;"></div></li>
 					</ul>
 				</div>
 			</div>
@@ -116,9 +112,10 @@
 	</div>
 </div>
 
+<!-- templates used elsewhere -->
 <li id="tagListTemplate"></li>
-
 <li id="itemTemplate"><input type="checkbox" class="task_chk" name="" /><span class="title"></span><span class="due"></span><span class="tags"></span><div style="clear: both;"></div></li>
+<!-- end templates -->
 
 </body>
 
