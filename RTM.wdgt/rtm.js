@@ -95,7 +95,7 @@ var markTaskDone = function (e) {
 		return;
 	}
 
-	res = eval(res.data);
+	res = eval("(" + res.data + ")");
 	if (res.rsp.transaction.undoable == "1") {
 		prepUndo(res.rsp.transaction.id);
 	}
@@ -113,7 +113,7 @@ var rtmTimeline = function () {
 
 		if(res.stat == "failure")
 			log("couldn't get timeline: " + res.data);
-		res = eval(res.data);
+		res = eval("(" + res.data + ")");
 
 		gRTMTimelineId = Number(res.rsp.timeline);
 	}
@@ -543,7 +543,7 @@ var checkAuthSetup = function () {
 	/*
 	ok; we have a token, let's check that it works, ahright?
 	*/
-	var tokGood = eval(rtmAjax(gRTMMethUrl, {method: "rtm.auth.checkToken"}));
+	var tokGood = eval("(" + rtmAjax(gRTMMethUrl, {method: "rtm.auth.checkToken"}) + ")");
 	if(tokGood.rsp.stat == "fail" && tokGood.rsp.err.code == "98") {
 		log("token bogus, need to regen");
 		if(!regenToken())
@@ -576,7 +576,7 @@ var regenToken = function () {
 	var res = rtmAjax(gRTMMethUrl, regenArgs);
 
 	log("regen token result: " + res);
-	res = eval(res);
+	res = eval("(" + res + ")");
 	if(res.rsp.stat == "fail") {
 		log("regen failed: error " + res.rsp.err.code + ", " + res.rsp.err.msg);
 		return false;
@@ -601,7 +601,7 @@ var rtmGetFrob = function () {
 	need a new frob
 	*/
 	var frobArgs = {method: "rtm.auth.getFrob", api_key: gRTMAPIKey, format: "json"};
-	var frobRet = eval(rtmAjax(gRTMMethUrl, frobArgs));
+	var frobRet = eval("(" + rtmAjax(gRTMMethUrl, frobArgs) + ")");
 	log("frob from server: " + frobRet.rsp.frob);
 
 	if(frobRet.rsp.stat == "ok") {
@@ -635,7 +635,7 @@ var rtmAuth = function () {
 	var ret = rtmAjax(gRTMMethUrl, args);
 	log("getToken response: " + ret);
 
-	ret = eval(ret);
+	ret = eval("(" + ret + ")");
 
 	/*
 	just for testing:
@@ -1036,7 +1036,7 @@ var rtmSign = function (args) {
 		}
 	}).responseText;
 	log("ajax response: " + sig);
-	sig = eval(sig).md5.hash;
+	sig = eval("(" + sig + ")").md5.hash;
 	/*
 	end ajax code 
 	*/
