@@ -47,7 +47,7 @@ var gDays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', '
 miscellaneous
 */
 var gDEBUG = true;
-var gAppVersion = "caribou";
+var gAppVersion = "dachshund_10_5";
 
 
 var showPrefs = function () { 
@@ -232,13 +232,10 @@ var populateTasksContinue = function (tasks) {
 /*
 creates a list item for a task, called mainly from populateTasks()
 */
-var addTaskToList = function() {  // this == {due:due task:{list_id, name, ts_id, task_id, tags, due}}
-	/*log("addtasktolist this: " + String(this));
-	for(var k in this) {
-		log("addtasktolist: this[" + k + "] == " + this[k]);
-	}*/
+var addTaskToList = function(iter) {  // this == {due:due task:{list_id, name, ts_id, task_id, tags, due}}
 	var cur_task = this.task;
 	var newItem = $("#itemTemplate").clone();
+	newItem.attr("id", ""); // make sure this isn't the one used in subsequent clones!
 
 	var list_id = String(cur_task.list_id);
 	var taskseries_id = String(cur_task.ts_id);
@@ -247,7 +244,6 @@ var addTaskToList = function() {  // this == {due:due task:{list_id, name, ts_id
 	var name = String(cur_task.name).replace("<", "&lt;", "g").replace(">", "&gt;", "g");
 	var due = String(cur_task.due);
 
-	//log("filling in newItem values");
 	newItem.children(".title").append($("<a href='' class='taskEdit'>" + name + "</a>"));
 	newItem.children(".due").html(due);
 	newItem.children(".tags").html(tags);
@@ -381,10 +377,10 @@ var populateLists = function () {
 var populateListsContinue = function (lists) {
 	if(lists.stat == "failure" || $(lists.data).children("rsp").children("lists").length < 1)
 		return;
+	log("raw data: " + String(lists.data));
 	lists = $(lists.data).children("rsp");
 
 	log("initial list: " + String(gCurrentList));
-
 
 	lists.children("lists").children("list").each(addListItem);
 
@@ -394,14 +390,11 @@ var populateListsContinue = function (lists) {
 			$("#lists").get(0).selectedIndex = i;
 	}
 	
-	//linkManip($("#showNewTaskPane").get(0), true);
-	//$("#showNewTaskPane").children("a:first").click(setupNewTaskPane);
 	$("#showNewTaskPane").children(".nolink:first").hide();
 	$("#showNewTaskPane").children("a:first").show();
 
 	show_waiting(false);
 	$("#listsSection").show();
-	//addListItem(lists[l].id, lists[l].name);
 };
 
 var addListItem = function (i, data) {
@@ -409,18 +402,23 @@ var addListItem = function (i, data) {
 	$(..).each(func()) places the target element in 'this'
 	*/
 	log("adding a list with id " + String(i));
-	if(typeof(data) != "undefined") {
+
+	if(typeof(data) != "undefined" && data != this) {  
+		// if this function is called w/o a 'data' argument, then data is set to point to the object it's called with, i.e., this
 		var name = data.name;
 		var id = data.id;
 	} else {
+		for(var i in this.attributes) log("attribute: " + i + "::" + this.getAttribute(i));
 		var name = $(this).attr("name");
-		var id = $(this).children("task:first").attr("id");
+		var id = $(this).attr("id");
 	}
 
-	var newListItem = "<option id='list_" + String(id) +"' name='' value='' class='list_option'><span class='title'>" + String(name) + "</span></option>";
+	name = String(name).replace("&", "&amp;", "g").replace("<", "&lt;", "g").replace(">", "&gt;", "g");
+	id = String(id).replace("&", "&amp;", "g").replace("<", "&lt;", "g").replace(">", "&gt;", "g");
+	log("list name & id: " + name + ", " + id);
+	var newListItem = "<option id='list_" + String(id) + "' name='' value='' class='list_option'><span class='title'>" + String(name) + "</span></option>";
 
-	//log("adding list item: " + String(newListItem).replace("&", "&amp;", "g").replace("<", "&lt;", "g").replace(">", "&gt;", "g"));
-
+	log("adding list item " + name);
 	$("#lists").append(newListItem);
 };
 
@@ -509,6 +507,13 @@ var rtmCallAsync = function (methName, args, asXML, callback) {
 
 var rtmCallSyncEnd = function (ret, txt, continueFunc) {
 	log("got back form async ajax with status " + txt);
+	$(ret).children("*").each(function(i) {
+					log();
+				});
+	log("content: " + $(ret).length);
+/*	for(var i in ret) {
+		log(String(i) + " is " + ret[i]);
+	} */
 	continueFunc({stat: "success", data: ret});
 };
 
