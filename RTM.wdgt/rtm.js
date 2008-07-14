@@ -1342,6 +1342,7 @@ var setup = function () {
 	*/
 	$(".goToRTM").click(function(e) { genericUrlOpen("http://www.rememberthemilk.com/"); return false; } );
 	$(".goToProject").click( function(e) { genericUrlOpen("http://code.google.com/p/rememberthemoof/"); return false; } );
+	$(".goToHome").click( function(e) { genericUrlOpen("http://www.hoprocker.net/rtm/"); return false; } );
 	$(".goToMoof").click( function(e) { genericUrlOpen("http://www.storybytes.com/moof.html"); return false; } );
 	
 	$("#lists").change(loadNewList);
