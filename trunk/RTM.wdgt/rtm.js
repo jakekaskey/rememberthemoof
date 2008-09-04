@@ -1328,7 +1328,7 @@ var setup = function () {
 		apple-gooey setup here
 		*/
 		gInfoBtn = new AppleInfoButton($("#infoButton").get(0), $("#front").get(0), "black", "black", showPrefs);
-		gDoneBtn = new AppleGlassButton($("#doneBtn").get(0), "back", hidePrefs);
+		gDoneBtn = new AppleGlassButton($("#doneBtn").get(0), "Done", hidePrefs);
 		// correct apple's draconian positioning
 		var info_img = $("#infoButton").children("img:first");
 		$("#infoButton").css({position: "relative", width: info_img.attr("width"), height:info_img.attr("height")}); 
