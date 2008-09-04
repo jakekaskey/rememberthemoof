@@ -47,7 +47,7 @@ var gDays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', '
 miscellaneous
 */
 var gDEBUG = true;
-var gAppVersion = "dachshund_10_5";
+var gAppVersion = "emu";
 
 
 var showPrefs = function () { 
@@ -1106,7 +1106,8 @@ var parseRTMDate = function(d, has_due_time) {
 				new_date.getDate() == now_date.getDate() + 1) ||
 			(new_date.getYear() == now_date.getYear() &&
 				new_date.getMonth() == now_date.getMonth() + 1 &&
-				new_date.getDate() == 1)) {
+				new_date.getDate() == 1 &&
+				now_date.getDate() == new Date( null, null, -1 ))) {
 		date_str = "Tomorrow";
 	} else if ((new_date.getTime() > now_date.getTime()) &&
 			new_date.getTime() < (now_date.getTime() + (6 * 1000 * 3600 * 24 - 1))) {
