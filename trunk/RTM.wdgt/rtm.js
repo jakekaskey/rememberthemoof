@@ -29,6 +29,7 @@ var gRTMAuthToken;
 var gRTMUserId;
 var gRTMTimelineId = -1;
 var gCurrentList = 0;
+var gCurrentTag = null;
 var gUndoStack = [];  // [[timer_id, trans_id], ..]
 var gOverlays = [];
 
@@ -279,6 +280,13 @@ var refreshTagList = function (tags) {
 	$("#tagPop > .shown").append($("<a href=''>all</a>"));
 	$("#tagPop > .shown > a").click(doTagPop);
 
+	if( gCurrentTag != null && tags.length > 0 ) 
+		for( var i in tags )
+			if( gCurrentTag == tags[i] ) {
+				log( "showing only tag --> " + gCurrentTag );
+				tagShowOnly( gCurrentTag );
+			}
+		
 	log("tag list refreshed");
 };
 
@@ -293,7 +301,7 @@ var addTagListItem = function () {
 	newli.attr("id", "tagList_" + name);
 	newli.append($("<a href=''>" + name + "</a>"));
 	newli.children("a").hover(tagListOver, tagListOut);
-	newli.children("a").click(tagShowOnly);
+	newli.children("a").click(getTagClick);
 	newli.show();
 
 	$("#tagList > ul").append(newli);
@@ -322,8 +330,14 @@ var tagListOut = function () {
 /*
 filter items in the tasklist to only show ones with this tag
 */
-var tagShowOnly = function (e) {
+var getTagClick = function ( e ) {
 	var tagName = $(e.target).text();
+	gCurrentTag = tagName;
+	tagShowOnly( tagName );
+
+	return false;
+}
+var tagShowOnly = function ( tagName ) {
 	log("filter task items for tag " + tagName);
 
 	$("#taskList > li").removeClass("hilite");
@@ -341,8 +355,6 @@ var tagShowOnly = function (e) {
 	$("#tagList").hide();
 
 	makeWindowFit($("#front"));
-
-	return false;
 };
 
 /*
