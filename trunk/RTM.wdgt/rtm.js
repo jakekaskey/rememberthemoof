@@ -10,11 +10,10 @@ This code is released under both the MIT and GPL licenses.
 */
 
 /*
-this stuff is for when I start snazzing this up apple-style
+global handles to some widget elements
 */
 var gInfoBtn;
 var gDoneBtn;
-
 
 /*  
 use me if you want to experiment locally, but be sure to uncomment the related code
@@ -25,6 +24,7 @@ var gRTMShared = "";
 var gRTMAPIKey = "87b748d22dca6a95a2674048ea627c76";
 var gRTMAuthUrl = "http://www.rememberthemilk.com/services/auth/";
 var gRTMMethUrl = "http://api.rememberthemilk.com/services/rest/";
+var gRTMSignHost = "64.22.121.161:786";
 var gRTMAuthToken;
 var gRTMUserId;
 var gRTMTimelineId = -1;
@@ -123,7 +123,7 @@ var rtmTimeline = function () {
 };
 
 /*
-method to fill out the task list
+methods to fill out the task list
 
 NOTE: this *sorely* needs refactoring...
 */
@@ -134,12 +134,12 @@ var populateTasks = function () {
 	var list_id = gCurrentList;
 	log("list_id: " + String(list_id));
 
-	var arguments = {};
+	var call_args = {};
 	if(isNaN(list_id) == false && Number(list_id) > 0)
-		arguments.list_id = String(list_id);
+		call_args.list_id = String(list_id);
 
 //	var tasks = rtmCall("rtm.tasks.getList", arguments, true);
-	rtmCallAsync ("rtm.tasks.getList", arguments, true, populateTasksContinue);
+	rtmCallAsync ("rtm.tasks.getList", call_args, true, populateTasksContinue);
 };
 
 var populateTasksContinue = function (tasks) {
@@ -220,8 +220,9 @@ var populateTasksContinue = function (tasks) {
 	this only matters the first time, so it'd be *really* nice to have it in some sort of
 	chained-function capability (chain it in the setup routine)....
 	*/
+	$( "#statusLine" ).hide();
 	show_waiting(false);
-	$("#splashSection").hide();
+	$("#splashSection").remove();
 	$("#taskSection").show();
 	$(".taskEdit").click(setupTaskPane);
 
@@ -686,7 +687,8 @@ clear everything out, setup the link
 */
 var setupNewAuth = function() {
 	clearAuthTokens();
-	$("#splashSection").hide();  // just in case
+	$("#splashSection").remove();  // just in case
+	$("#taskSection").empty();
 	$("#needToAuth").show();
 	$("#needToAuth a:first").click(openAuthUrl);
 };
@@ -1020,7 +1022,7 @@ var rtmSign = function (args) {
 	var elArr = [];
 	var normStr = "";
 	// add port 786 (port RTM)
-	var url = "http://64.22.121.161:786/signargs/";
+	var url = "http://" + gRTMSignHost + "/signargs/";
 
 	for(var el in args) { elArr.push(el); }
 	elArr.sort();
@@ -1154,13 +1156,13 @@ var rtmDueSort = function(task1, task2) {
 					((task1.task.name[0].toLowerCase() < task2.task.name[0].toLowerCase()) ? -1 : 1))
 		} else {
 			/*
-			undefined's take precedence
+			undefined's come last
 			*/
-			return -1
+			return 1;
 		}
 	} else {
 		if(typeof(task2.due) == "undefined") {
-			return 1;
+			return -1;
 		}
 	}
 
@@ -1266,8 +1268,8 @@ var makeWindowFit = function(el) {
 
 			log("taskpane dims: w=" + tp_dims.w + ", h=" + tp_dims.h);
 
-			if(tp_dims.h + $("#taskPane").offset().top > newdims.h) newdims.h = tp_dims.h + $("#taskPane").offset().top;
-			if(tp_dims.w + $("#taskPane").offset().left > newdims.w) newdims.w = tp_dims.w + $("#taskPane").offset().left;
+			newdims.h = Math.max( newdims.h, tp_dims.h + $("#taskPane").offset().top );
+			newdims.w = Math.max( newdims.w, tp_dims.w + $("#taskPane").offset().left );
 		}
 		if($("#tagList").css("display") != "none") {
 			/*
@@ -1285,6 +1287,7 @@ var makeWindowFit = function(el) {
 		log("resizing to: w=" + newdims.w + ", h=" + newdims.h);
 
 		window.resizeTo(newdims.w, newdims.h);
+		$( "#tasklist" ).height( newdims.h );
 	}
 };
 
@@ -1303,16 +1306,25 @@ var adjustForPadMarg = function(dims) {
 	dims.h += extra.y;
 };
 
+var _status = function( msg ) {
+	$( ".content", "#statusLine" ).html( msg );
+};
+var showStatus = function() {
+	$( "#statusLine" ).show();
+};
+
 /*******
 main setup function
 ********/
 var setup = function () {
 
-	if(typeof(gDEBUG) != "undefined") {
+	/*if( typeof( gDEBUG ) != "boolean" && gDEBUG == true ) {
 		log = oldlog;
 		$("#evenMore").show();
 		$("#debugChk").attr("value", "on");
-	}
+	}*/
+	log = _status;
+	showStatus();
 
 	log("entering setup");
 
@@ -1341,6 +1353,8 @@ var setup = function () {
 		*/
 		gInfoBtn = new AppleInfoButton($("#infoButton").get(0), $("#front").get(0), "black", "black", showPrefs);
 		gDoneBtn = new AppleGlassButton($("#doneBtn").get(0), "Done", hidePrefs);
+
+
 		// correct apple's draconian positioning
 		var info_img = $("#infoButton").children("img:first");
 		$("#infoButton").css({position: "relative", width: info_img.attr("width"), height:info_img.attr("height")}); 
@@ -1351,7 +1365,7 @@ var setup = function () {
 	**********/
 	
 	/*
-	url pate opens
+	url page opens
 	*/
 	$(".goToRTM").click(function(e) { genericUrlOpen("http://www.rememberthemilk.com/"); return false; } );
 	$(".goToProject").click( function(e) { genericUrlOpen("http://code.google.com/p/rememberthemoof/"); return false; } );
@@ -1386,13 +1400,13 @@ var setup = function () {
 		/*
 		this stuff is all for debugging in a browser
 		*/
-	//	$(".hideOnLoad").show();
+		$(".hideOnLoad").show();
 		buildFront();
 		$("body").css("background-color", "#000044'");
-	//	$("#undoPane").show();
-	//	$("#tagList").show();
-	//	addTagListItem.call(String("test1"));
-	//	addTagListItem.call(String("test2"));
+		$("#undoPane").show();
+		$("#tagList").show();
+		addTagListItem.call(String("test1"));
+		addTagListItem.call(String("test2"));
 	}
 	
 	log("setup done");

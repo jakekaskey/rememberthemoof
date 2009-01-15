@@ -5,9 +5,7 @@
 
 <title>Remember the Moof</title>
 
-<style>
-@import "rtm.css";
-</style>
+<link type="text/css" rel="stylesheet" href="./rtm.css" />
 
 <script type="text/javascript" src="files/jquery-1.2.3.min.js" />
 <!-- the following is only necessary if the RTM shared key is in the javascript -->
@@ -15,7 +13,11 @@
 <script type='text/javascript' src='/System/Library/WidgetResources/AppleClasses/AppleInfoButton.js' charset='utf-8'/>
 <script type='text/javascript' src='/System/Library/WidgetResources/AppleClasses/AppleAnimator.js' charset='utf-8'/>
 <script type='text/javascript' src='/System/Library/WidgetResources/AppleClasses/AppleButton.js' charset='utf-8'/>
-<script type="text/javascript" src="rtm.js" />
+<script type='text/javascript' src='/System/Library/WidgetResources/AppleClasses/AppleScrollArea.js' charset='utf-8'/>
+<script type='text/javascript' src='/System/Library/WidgetResources/AppleClasses/AppleScrollbar.js' charset='utf-8'/>
+<!-- script type='text/javascript' src='http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js'></script -->
+        
+<script type="text/javascript" src="rtm.js"></script>
 </head>
 
 <body>
@@ -38,7 +40,7 @@
 				<a href="">Click here</a> to authorize this app with your RTM account.
 			</div>
 			<div class="section hideOnLoad" id="taskSection">
-				<div>
+				<div id="fullFrame">
 					<span class="left"><a href="" class="goToRTM"><img style="height: 12pt; border: 0;" src="files/rtm_logo_sm.png" /></a></span>
 					<span class="left"><h3>Tasks</h3></span>
 					<span id="waitIcon" class="left"><img src="files/ajax-loader.gif" /></span>
@@ -68,6 +70,12 @@
 				<span class="taskTags"><label>Tags:</label> <input type="text" class="user" /><input type="hidden" class="orig" /></span>
 				<input type="hidden" class="extraInfo" />
 				<input type="submit" id="taskCancel" value="Never mind"/>&nbsp;&nbsp;<input type="submit" id="taskSubmit" value="googly" disabled="true" />
+			</div>
+			<div id="statusLine" >
+				<div class="indicator"></div>
+				<div class="output">
+					<span class="content">istuff</span>
+				</div>
 			</div>
 			<div id="tagList">
 				<ul>
