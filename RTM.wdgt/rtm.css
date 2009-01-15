@@ -60,6 +60,7 @@ ul {
 	padding-bottom: 8px;
 }
 #framedContent {
+	position: relative;
 	border-style: solid;
 	border-color: #111;
 	border-width: 0 1px;
@@ -201,19 +202,26 @@ ul {
 	display: none;
 }
 
-#taskSection > div {
-	/*border: 1px dotted #00f;*/
+#fullFrame {
+	position: relative;
+	border: 1px dotted #00f;
 }
 
-/*#taskSection > div h3 {
-	margin: 0;
-}*/
+#listSection {
+	border: 1px solid #f00;
+	/*left: 10px;
+	right: 10px;
+	bottom: 10px;
+	top: 10px;*/
+}
 
 /*
 task list
 */
 #taskList {
 	clear: both;
+	overflow-y: auto;
+	max-height: 950px;
 }
 #taskList li {
 	padding: 2px 0;
@@ -221,6 +229,7 @@ task list
 	clear: left;
 }
 #taskList li > * {
+	/* for debugging */
 	/*border: 1px solid #f00;*/
 }
 #taskList li .task_chk {
@@ -243,6 +252,15 @@ task list
 #taskList li .tags {
 	display: none;
 }
+
+/* #taskListScrollbar {
+	position: absolute;
+	right: 15px;
+	top: 10px;
+	bottom: 10px;
+	width: 19px;
+} */
+
 #tagPop {
 	margin-left: 8px;
 }
@@ -339,3 +357,23 @@ task list
 #doneBtn {
 }
 
+
+#statusLine {
+	position: absolute;
+	top: 350px;
+	left: 10%;
+	right: 10%;
+	background-color: #444;
+	color: #fff;
+	border: 1px solid #000;
+	z-index: 1000;
+	opacity: .75;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+}
+#statusLine .output {
+	height: auto;
+	font-size: 1.2em;
+	text-align: center;
+	margin: 0 auto;
+}
