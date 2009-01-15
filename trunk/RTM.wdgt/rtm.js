@@ -688,8 +688,8 @@ clear everything out, setup the link
 */
 var setupNewAuth = function() {
 	clearAuthTokens();
-	$("#splashSection").remove();  // just in case
-	$("#taskSection").empty();
+	$("#splashSection").hide();  // just in case
+	$("#taskList").empty();
 	$("#needToAuth").show();
 	$("#needToAuth a:first").click(openAuthUrl);
 };
@@ -1401,13 +1401,17 @@ var setup = function () {
 		/*
 		this stuff is all for debugging in a browser
 		*/
+		_status( "building test data" );
 		$(".hideOnLoad").show();
 		buildFront();
 		$("body").css("background-color", "#000044'");
 		$("#undoPane").show();
 		$("#tagList").show();
-		addTagListItem.call(String("test1"));
-		addTagListItem.call(String("test2"));
+
+		$( "#taskSection > *" ).show();
+
+		_setupDebug();
+		_status( "done building test data" );
 	}
 	
 	log("setup done");
@@ -1440,3 +1444,84 @@ var dumpHtml = function (e) {
 		}
 	}
 };
+
+
+/*
+ *
+ * DEBUG {{{
+ *
+ */
+
+var dbg_addDummyTasks = function () {
+/*
+	var task1 = $( "#itemTemplate" ).clone();
+	$( ".title:first", task1 ).html( "test task 1");
+	$( ".due:first", task1 ).html( "Tomorrow");
+
+	var task2 = $( "#itemTemplate" ).clone();
+	$( ".title:first", task2 ).html( "test task 1");
+	$( ".due:first", task2 ).html( "Tomorrow");
+
+	$.each( [ task1, task2 ], function(i) { $( "#taskList" ).append( this ); } );
+
+	$.each( [task1, task2], function (i) { $( this ).removeAttr( 'id' ); } );
+{due:due task:{list_id, name, ts_id, task_id, tags, due}} */
+	$( "#taskList" ).show();
+	var task1 = { 	due: "Today",
+			task: {
+				list_id : 0,
+				name    : 'YES!!!!',
+				ts_id   : 0,
+				task_id : 0,
+				tags    : '',
+				due     : 'Monday'
+			} };
+	addTaskToList.apply( task1, [] );
+
+	return false;
+};
+
+var dbg_addDummyTags = function () {
+	addTagListItem.call(String("test1"));
+	addTagListItem.call(String("test2"));
+
+	return false;
+};
+
+var dbg_toggleSplashShow = function () {
+	( $( "#dbg_showSplash" ).attr( "checked" ) == true )
+			? $( "#splashSection" ).show()
+			: $( "#splashSection" ).hide();
+		
+};
+
+var dbg_toggleClickHereShow = function () {
+	( $( "#dbg_showAuthPane" ).attr( "checked" ) == true )
+			? $( "#needToAuth" ).show()
+			: $( "#needToAuth" ).hide();
+};
+
+var dbg_toggleStatusShow = function () {
+	( $( "#dbg_showStatus" ).attr( "checked" ) == true )
+			? $( "#statusLine" ).show()
+			: $( "#statusLine" ).hide();
+};
+
+var dbg_toggleTaskEditShow = function () {
+	( $( "#dbg_showTaskEdit" ).attr( "checked" ) == true )
+			? $( "#taskPane" ).show()
+			: $( "#taskPane" ).hide();
+};
+
+var _setupDebug = function () {
+	$( "#dbg_addDummyTasks" ).click( dbg_addDummyTasks );
+	$( "#dbg_addDummyTags" ).click( dbg_addDummyTags );
+	$( "#dbg_showAuthPane" ).click( dbg_toggleClickHereShow );
+	$( "#dbg_showSplash" ).click( dbg_toggleSplashShow );
+	$( "#dbg_showStatus" ).click( dbg_toggleStatusShow );
+	$( "#dbg_showTaskEdit" ).click( dbg_toggleTaskEditShow );
+
+	$( "#devPane" ).show();
+};
+
+/* }}} DEBUG */
