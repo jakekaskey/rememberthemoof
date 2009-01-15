@@ -112,22 +112,6 @@ ul {
 	width: 350px;
 }
 
-#itemTemplate {
-	display: none;
-}
-
-#evenMore {
-	padding: 20px;
-	background-color: #dfd;
-	width: 100%;
-	display: none;
-}
-#needToAuth {
-	text-align: center;
-	font-weight: bold;
-	margin: 8px 0;
-}
-
 #back {
 	color: #fff;
 	background: url('files/rtm_banner.png') no-repeat top left #111 fixed;
@@ -187,7 +171,6 @@ ul {
 	font-weight: bold;
 	margin: 8px 0;
 }
-#
 #methodDisp {
 	margin: 10px 10px 10px 0;
 	padding: 5px;
@@ -204,11 +187,9 @@ ul {
 
 #fullFrame {
 	position: relative;
-	border: 1px dotted #00f;
 }
 
 #listSection {
-	border: 1px solid #f00;
 	/*left: 10px;
 	right: 10px;
 	bottom: 10px;
@@ -218,11 +199,15 @@ ul {
 /*
 task list
 */
-#taskList {
+#taskListWrapper {
 	clear: both;
 	overflow-y: auto;
 	max-height: 950px;
+	padding: .5em .5em 0 .5em;
+	margin-top: .5em;
+	border-top: 1px solid #ccc;
 }
+
 #taskList li {
 	padding: 2px 0;
 	margin: 0;
@@ -360,9 +345,9 @@ task list
 
 #statusLine {
 	position: absolute;
-	top: 350px;
-	left: 10%;
-	right: 10%;
+	bottom: 20px;
+	left: 15px;
+	right: 15px;
 	background-color: #444;
 	color: #fff;
 	border: 1px solid #000;
@@ -377,3 +362,37 @@ task list
 	text-align: center;
 	margin: 0 auto;
 }
+
+.priority1 { background-color: #EA5200; }
+.priority2 { background-color: #0060BF; }
+.priority3 { background-color: #359AFF; }
+
+
+/*
+ *
+ * DEBUG SUTFF {{{
+ *
+ */
+#devPane {
+	display: none;
+	position: absolute;
+	right: 15px;
+	top: 15px;
+	padding: 1em;
+	background-color: #D9FFA9;
+	border: 1px solid #444;
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	opacity: .9;
+}
+
+#devPane ul.actions {
+	padding: 0;
+	list-style: none;
+}
+
+#devPane ul.actions li {
+	padding:.25em .5em;
+}
+
+/* }}} */

@@ -52,8 +52,10 @@
 						<span id="tagPop"><span class="prompt">Tags: </span><span class="shown"></span></span>
 					</div>
 					<div style="clear: both;"></div>
-					<ul id="taskList">
-					</ul>
+					<div id="taskListWrapper">
+						<ul id="taskList">
+						</ul>
+					</div>
 				</div>
 			</div>
 			<div class="section" id="infoSection">
@@ -127,6 +129,28 @@
 <li id="itemTemplate"><input type="checkbox" class="task_chk" name="" /><span class="title"></span><span class="due"></span><span class="tags"></span><div style="clear: both;"></div></li>
 <!-- end templates -->
 
+<div id="devPane">
+	<ul class="actions">
+		<li class="action">
+			<a href="" id="dbg_addDummyTasks">populate task list"</a>
+		</li>
+		<li class="action">
+			<a href="" id="dbg_addDummyTags">add tags</a>
+		</li>
+		<li class="action">
+			<input checked type="checkbox" id="dbg_showAuthPane" name="showAuthPane" /><label for="showAuthPane">show 'click here'</label>
+		</li>
+		<li class="action">
+			<input type="checkbox" id="dbg_showSplash" name="showSplash" /><label for="showSplash">show splash pane</label>
+		</li>
+		<li class="action">
+			<input checked type="checkbox" id="dbg_showStatus" name="showStatus" /><label for="showStatus">show status pane</label>
+		</li>
+		<li class="action">
+			<input checked type="checkbox" id="dbg_showTaskEdit" name="showTaskEdit" /><label for="showTaskEdit">show task edit</label>
+		</li>
+	</ul>
+</div>
 </body>
 
 </html>
