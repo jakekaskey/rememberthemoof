@@ -196,6 +196,7 @@ var populateTasksContinue = function (tasks) {
 					ts_id: cur_ts.attr("id"),
 					task_id: cur_task.attr("id"),
 					tags: tags.join(","),
+					prio: cur_task.attr( "priority" ),
 					due: parseRTMDate(cur_task.attr("due"), (cur_task.attr("has_due_time") == "1"))
 				};
 				task_list.push({due:cur_task.attr("due"), task:task_obj});
@@ -235,20 +236,23 @@ var populateTasksContinue = function (tasks) {
 /*
 creates a list item for a task, called mainly from populateTasks()
 */
-var addTaskToList = function(iter) {  // this == {due:due task:{list_id, name, ts_id, task_id, tags, due}}
+var addTaskToList = function(iter) {  // this == {due:due task:{list_id, name, ts_id, task_id, tags, prio, due}}
 	var cur_task = this.task;
 	var newItem = $("#itemTemplate").clone();
-	newItem.attr("id", ""); // make sure this isn't the one used in subsequent clones!
+	newItem.removeAttr("id"); // make sure this isn't the one used in subsequent clones!
 
 	var list_id = String(cur_task.list_id);
 	var taskseries_id = String(cur_task.ts_id);
 	var task_id = String(cur_task.task_id);
 	var tags = cur_task.tags;
 	var name = String(cur_task.name).replace("<", "&lt;", "g").replace(">", "&gt;", "g");
+	var priority = String( cur_task.prio );
 	var due = String(cur_task.due);
 
 	newItem.children(".title").append($("<a href='' class='taskEdit'>" + name + "</a>"));
 	newItem.children(".due").html(due);
+	if( $.inArray( priority, [ "1", "2", "3" ] ) > -1 )
+		newItem.children( ".prio" ).addClass( "priority" + priority );
 	newItem.children(".tags").html(tags);
 	newItem.children(".task_chk").attr("name", "taskchk_" + list_id + "_" + taskseries_id + "_" + task_id);
 	newItem.children(".task_chk").attr("id", "taskchk_" + list_id + "_" + taskseries_id + "_" + task_id);
@@ -1474,6 +1478,7 @@ var dbg_addDummyTasks = function () {
 				ts_id   : 0,
 				task_id : 0,
 				tags    : '',
+				prio    : '',
 				due     : 'Monday'
 			} };
 	addTaskToList.apply( task1, [] );

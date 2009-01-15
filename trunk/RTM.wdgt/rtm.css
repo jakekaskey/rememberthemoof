@@ -234,6 +234,14 @@ task list
 	color: #aaa;
 	text-align: right;
 }
+#taskList li .prio {
+	float: left;
+	width: 5px;
+	height: 1.2em;
+	overflow: hidden;
+	color: #c79;
+	margin: 0 6px 0 3px;
+}
 #taskList li .tags {
 	display: none;
 }
@@ -363,9 +371,9 @@ task list
 	margin: 0 auto;
 }
 
-.priority1 { background-color: #EA5200; }
-.priority2 { background-color: #0060BF; }
-.priority3 { background-color: #359AFF; }
+.priority1 { background-color: #EA5200; }  /* 234,82,0 */
+.priority2 { background-color: #0060BF; }  /* 0,96,191 */
+.priority3 { background-color: #359AFF; }  /* 53,154,255 */
 
 
 /*
