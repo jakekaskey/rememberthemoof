@@ -24,7 +24,8 @@ var gRTMShared = "";
 var gRTMAPIKey = "87b748d22dca6a95a2674048ea627c76";
 var gRTMAuthUrl = "http://www.rememberthemilk.com/services/auth/";
 var gRTMMethUrl = "http://api.rememberthemilk.com/services/rest/";
-var gRTMSignHost = "64.22.121.161:786";
+var gRTMSignHost = "rtmoof.appspot.com";
+var gRTMSignPath = "sign/";
 var gRTMAuthToken;
 var gRTMUserId;
 var gRTMTimelineId = -1;
@@ -1022,7 +1023,7 @@ var rtmSign = function (args) {
 	var elArr = [];
 	var normStr = "";
 	// add port 786 (port RTM)
-	var url = "http://" + gRTMSignHost + "/signargs/";
+	var url = "http://" + gRTMSignHost + "/" + gRTMSignPath;
 
 	for(var el in args) { elArr.push(el); }
 	elArr.sort();
