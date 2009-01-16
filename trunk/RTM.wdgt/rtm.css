@@ -203,13 +203,13 @@ task list
 	clear: both;
 	overflow-y: auto;
 	max-height: 950px;
-	padding: .5em .5em 0 .5em;
+	padding: .5em .25em 0 .25em;
 	margin-top: .5em;
 	border-top: 1px solid #ccc;
 }
 
 #taskList li {
-	padding: 2px 0;
+	padding: 2px;
 	margin: 0;
 	clear: left;
 }
@@ -233,14 +233,6 @@ task list
 	overflow: hidden;
 	color: #aaa;
 	text-align: right;
-}
-#taskList li .prio {
-	float: left;
-	width: 5px;
-	height: 1.2em;
-	overflow: hidden;
-	color: #c79;
-	margin: 0 6px 0 3px;
 }
 #taskList li .tags {
 	display: none;
@@ -371,10 +363,23 @@ task list
 	margin: 0 auto;
 }
 
+/*
+ * RTMilk's priority colors
+ */
 .priority1 { background-color: #EA5200; }  /* 234,82,0 */
 .priority2 { background-color: #0060BF; }  /* 0,96,191 */
 .priority3 { background-color: #359AFF; }  /* 53,154,255 */
 
+
+/* 
+ * wrapping colors for prio
+ */
+.priowrap1 { background-color: rgb(237,109,34); }  /* 255,171,130 */
+.priowrap2 { background-color: rgb(60, 136, 192); }  /* 161,196,223 */
+.priowrap3 { background-color: rgb(77, 170, 238); }  /* 185,224,255 */
+.hasPrio .due {
+	color: #fff !important;
+}
 
 /*
  *
