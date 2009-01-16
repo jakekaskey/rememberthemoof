@@ -56,7 +56,7 @@ var gStatMsgs = { en : {
 /*
 miscellaneous
 */
-var gDEBUG = true;
+var gDEBUG = false;
 var gAppVersion = "emu";
 
 
@@ -69,7 +69,6 @@ var showPrefs = function () {
 	if(window.widget)
 		window.setTimeout('widget.performTransition();', 0);
 
-	makeWindowFit($("#back"));
 	return false;
 };
 var hidePrefs = function () {
@@ -79,7 +78,6 @@ var hidePrefs = function () {
 	$("#front").show();
 	if(window.widget)
 		window.setTimeout('widget.performTransition();', 0);
-	makeWindowFit($("#front"));
 	return false;
 };
 
@@ -205,7 +203,7 @@ var populateTasksContinue = function (tasks) {
 					ts_id: cur_ts.attr("id"),
 					task_id: cur_task.attr("id"),
 					tags: tags.join(","),
-					prio: cur_task.attr( "priority" ),
+					prio: ( cur_task.attr( "priority" ) == "N" ) ? 4 : Number( cur_task.attr( "priority" ) ),
 					due: parseRTMDate(cur_task.attr("due"), (cur_task.attr("has_due_time") == "1"))
 				};
 				task_list.push({due:cur_task.attr("due"), task:task_obj});
@@ -215,7 +213,7 @@ var populateTasksContinue = function (tasks) {
 
 	if(lists.length > 0) {
 		log("more than one list at once, sorting");
-		task_list.sort(rtmDueSort);
+		task_list.sort(rtmTaskSort);
 	} else {
 		task_list.reverse(); // RTM sends us most recent first, we want the opposite
 	}
@@ -465,14 +463,20 @@ var loadNewList = function (e) {
 };
 
 var buildFront = function () {
-	statMsg( "building_front" );
-	log("building front");
-	populateLists();
-	populateTasks();
+	if( checkHaveLocalFrob() ) {
+		statMsg( "building_front" );
+		log("building front");
+		populateLists();
+		populateTasks();
 
-	while(gUndoStack.length > 0) window.clearTimeout(gUndoStack.pop()[0]); // [[timer_id, trans_id], ..]
+		while(gUndoStack.length > 0) window.clearTimeout(gUndoStack.pop()[0]); // [[timer_id, trans_id], ..]
 
-	$("#undoPane").hide();
+		$("#undoPane").hide();
+
+		makeWindowFit($("#front"));
+	} else {
+		setupNewAuth();
+	}
 
 	return;
 };
@@ -558,34 +562,46 @@ var checkAuthSetup = function () {
 	make sure we don't call getToken before we're authorized, or RTM will invalidate
 	the frob (and it's a pain to reset)
 	*/
-	if(!checkHaveFrob()) {
+	if( !checkHaveLocalFrob() ) {
 		/*
-		don't have a frob, so assume we haven't tried authenticating
-		*/
+		 * no frob, we haven't even embarked along authentication yet
+		 */
 		setupNewAuth();
-
+			
 		return {stat: "failure", data: "need token"};
 	}
 
-	/* 
-	good -- we have a frob, so assume that we're authenticated, and just need to get
-	our token (and please be correct)
-	*/
-	if(gRTMAuthToken == null || gRTMAuthToken == "")
-		if(rtmAuth() == false)
+	if( checkValidating() ) {
+		/*
+		 * in the middle of the validation process, get the token
+		 */
+		if( rtmAuth() == false ) {
+			emergencyLog( "token acquire failed during authentication!" );
 			return {stat: "failure", data: "token acquire failed"};
-	
+		}
+
+		/* otherwise,,,, yay! */
+		setValidating( false );
+	}
+
 	/*
-	ok; we have a token, let's check that it works, ahright?
-	*/
+	 * at this point, we definitely have the token. gotta check that whatever we have
+	 * is valid (may be old)
+	 */
 	var tokGood = eval("(" + rtmAjax(gRTMMethUrl, {method: "rtm.auth.checkToken"}) + ")");
 	if(tokGood.rsp.stat == "fail" && tokGood.rsp.err.code == "98") {
 		log("token bogus, need to regen");
-		if(!regenToken())
+		if(!regenToken()) {
+			emergencyLog( "token regen failed" );
 			return {stat: "failure", data: "couldn't regen token for some reason"};
+		}
 	}
-	else if(tokGood.rsp.stat == "fail")
+	else if(tokGood.rsp.stat == "fail") {
+		emergencyLog( "token check failed! RTM returned error\n<br/> " + 
+			String( tokGood.rsp.err.code ) + ": " + 
+			String( tokGood.rsp.err.msg ) );
 		return {stat: "failure", data: tokGood.rsp.err.code + ": " + tokGood.rsp.err.msg};
+	}
 	
 	/*
 	if we successfully navigated the token auth retrieval labyrinth...
@@ -627,7 +643,7 @@ var regenToken = function () {
 a singleton method for the frob item
 */
 var rtmGetFrob = function () {
-	if(checkHaveFrob()) {
+	if(checkHaveLocalFrob()) {
 		log ("returning frob: " + String(widget.preferenceForKey("frob")));
 		return widget.preferenceForKey("frob");
 	}
@@ -651,7 +667,7 @@ var rtmGetFrob = function () {
 /*
 check our frob status
 */
-var checkHaveFrob = function () {
+var checkHaveLocalFrob = function () {
 	if (!window.widget)
 		return false;
 
@@ -663,7 +679,7 @@ var checkHaveFrob = function () {
 attempt to retrieve a valid auth_token and store it in our prefs
 */
 var rtmAuth = function () {
-	if(!checkHaveFrob())
+	if(!checkHaveLocalFrob())
 		return false;
 	
 	var args = {method:"rtm.auth.getToken", api_key:gRTMAPIKey, frob:rtmGetFrob(), format: "json"};
@@ -704,10 +720,26 @@ clear everything out, setup the link
 */
 var setupNewAuth = function() {
 	clearAuthTokens();
+
 	$("#splashSection").hide();  // just in case
 	$("#taskList").empty();
 	$("#needToAuth").show();
 	$("#needToAuth a:first").click(openAuthUrl);
+
+	if( window.widget )
+		setValidating( true );
+};
+
+/*
+ * validation state accessor/mutator
+ */
+var checkValidating = function() {
+	if( !window.widget ) return false;
+	return widget.preferenceForKey( "validating" );
+};
+var setValidating = function( state ) {
+	if( window.widget )
+		widget.setPreferenceForKey( state, "validating" );
 };
 
 /*
@@ -718,7 +750,6 @@ var rtmAjax = function (url, data, asXML, callback) {
 	if(typeof(data.method) == "undefined") return "Need a method name";
 
 	show_waiting(true);
-//	$("#undoPane").hide();
 
 	data.api_key = gRTMAPIKey;
 	data.format = (asXML == true) ? "rest" : "json";
@@ -917,8 +948,6 @@ var addNewTask = function (e) {
 };
 
 var updateTask = function (e) {
-	log("we'd be updating the task here");
-
 	var extraInfo = $("#taskPane > .extraInfo").val().split("_");
 	var attr;
 	log("task info: " + extraInfo.join(", "));
@@ -1113,6 +1142,12 @@ var _status = function( msg ) {
 	$( ".content", "#statusLine" ).html( msg );
 };
 
+var emergencyLog = function( msg ) {
+	/* ooo, boy... */
+	$( "#statusLine" ).show();
+	_status( msg );
+};
+
 var rtmNormalizeDateStr = function (datestr) {
 	var time = String(datestr.split("T")[1]).replace("Z", "");
 	var date = datestr.split("T")[0];
@@ -1170,8 +1205,17 @@ var parseRTMDate = function(d, has_due_time) {
 /*
 comparison function for sorting {due:due, task:cur_task}
 */
-var rtmDueSort = function(task1, task2) {
-	//log(task1.task.name + " due " + task1.due + ", " + task2.task.name + " due " + task2.due);
+var rtmTaskSort = function(task1, task2) {
+	/*
+	 * first, priorities
+	 */
+	if( task1.task.prio != task2.task.prio ) {
+		return ( task1.task.prio > task2.task.prio ) ? 1 : -1;
+	}
+	
+	/* 
+	 * if priorities are equiv, then dates are next
+	 */
 	if(typeof(task1.due) == "undefined" ) {
 		if(typeof(task2.due) == "undefined") {
 			/* 
@@ -1190,7 +1234,6 @@ var rtmDueSort = function(task1, task2) {
 			return -1;
 		}
 	}
-
 	/*
 	undefined's are out of the way, now actually sort the dates
 	*/
@@ -1336,11 +1379,12 @@ main setup function
 ********/
 var setup = function () {
 
-	/*if( typeof( gDEBUG ) != "boolean" && gDEBUG == true ) {
+	if( typeof( gDEBUG ) != "boolean" && gDEBUG == true ) {
 		log = oldlog;
 		$("#evenMore").show();
 		$("#debugChk").attr("value", "on");
-	}*/
+		$( ".debug" ).show();
+	}
 	//log = _status;
 	
 	$( "#statusLine" ).show();
@@ -1472,19 +1516,6 @@ var dumpHtml = function (e) {
  */
 
 var dbg_addDummyTasks = function () {
-/*
-	var task1 = $( "#itemTemplate" ).clone();
-	$( ".title:first", task1 ).html( "test task 1");
-	$( ".due:first", task1 ).html( "Tomorrow");
-
-	var task2 = $( "#itemTemplate" ).clone();
-	$( ".title:first", task2 ).html( "test task 1");
-	$( ".due:first", task2 ).html( "Tomorrow");
-
-	$.each( [ task1, task2 ], function(i) { $( "#taskList" ).append( this ); } );
-
-	$.each( [task1, task2], function (i) { $( this ).removeAttr( 'id' ); } );
-{due:due task:{list_id, name, ts_id, task_id, tags, due}} */
 	$( "#taskList" ).show();
 	var task1 = { 	due: "Today",
 			task: {

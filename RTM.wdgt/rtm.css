@@ -16,6 +16,7 @@ body {
 	margin: 0;
 	padding: 0;
 	width: 350px;
+	height: 491px;
 }
 
 h1, h2, h3 {
@@ -29,19 +30,19 @@ ul {
 }
 
 #mainWrapper {
-	/*width: 100%;
-	height: 100%;*/
 	margin: 0px;
 	padding: 0px;
 }
 
-#front {
-	/*background: url('files/rtm_logo.png') no-repeat top left #ffffff fixed;*/
-	display: block;
+#splashSection {
+       margin: -5px 0 0 -5px;
+       width: 350px;
 }
-#front .section {
-	padding: 0;
-	width: 340px;
+
+
+#front {
+	display: block;
+	position: relative;
 }
 #front a { color: #36c; text-decoration: none; }
 #front a:hover { color: #36c; text-decoration: underline; }
@@ -68,36 +69,10 @@ ul {
 	padding: 0 5px;
 }
 
-#back {
-	color: #fff;
-	background: url('files/rtm_banner.png') no-repeat top left #111 fixed;
-	height: 298px;
-	padding: 5px;
-	padding-left: 0;
-	display:none;
-}
-#back .section {
-	padding-left: 30px;
-	width: 310px;
-}
-
 .containers {
 	width: 100%;
 	height: 100%;
 }
-
-.section {
-	/*border-right: 1px solid #0f0;*/
-	margin: 0;
-	float: left;
-	clear: left;
-}
-.section.debug {
-}
-
-
-.left { float: left; }
-.right { float: right; }
 
 .hideOnLoad {
 	display: none;
@@ -107,12 +82,8 @@ ul {
 	color: #b00;
 }
 
-#splashSection {
-	margin: -5px 0 0 -5px;
-	width: 350px;
-}
-
 #back {
+	position: relative;
 	color: #fff;
 	background: url('files/rtm_banner.png') no-repeat top left #111 fixed;
 	height: 298px;
@@ -120,42 +91,22 @@ ul {
 	padding-left: 0;
 	display:none;
 }
+
+#front .section {
+	float: left;
+	width: 100%;
+	overflow: hidden;
+}
+
 #back .section {
 	padding-left: 30px;
 	width: 310px;
+	margin-bottom: 1em;
 }
 
-.containers {
-	width: 100%;
-	height: 100%;
-}
-
-.section {
-	/*border-right: 1px solid #0f0;*/
-	margin: 0;
-	float: left;
-	clear: left;
-}
-.section.debug {
-}
-
-
-.left { float: left; }
-.right { float: right; }
-
-.hideOnLoad {
+.debug {
 	display: none;
 }
-
-.error {
-	color: #b00;
-}
-
-#splashSection {
-	margin: -8px 0 0 -5px;
-	width: 350px;
-}
-
 #itemTemplate {
 	display: none;
 }
@@ -188,6 +139,17 @@ ul {
 #fullFrame {
 	position: relative;
 }
+
+#fullFrame .headerBar {
+	width: 100%;
+	overflow: hidden;
+}
+	#fullFrame .headerBar .item {
+		float: left;
+	}
+	#fullFrame .headerBar .action {
+		float: right;
+	}
 
 #listSection {
 	/*left: 10px;
@@ -337,9 +299,19 @@ task list
 	display: none;
 }
 #infoButton {
+	float: right;
 	position: relative;
 }
 #doneBtn {
+	position: absolute;
+	bottom: 10px;
+	right: 20px;
+}
+
+#moofImg {
+	float: right;
+	width: 30px;
+	margin-right: 10px;
 }
 
 
