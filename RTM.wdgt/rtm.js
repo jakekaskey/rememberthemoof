@@ -45,6 +45,14 @@ Hey, *here's* something for i18n!
 var gMonths = ["jan","feb","mar","apr","may","jun","jul","aug","sep","oct","nov","dec"];
 var gDays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
+var gLang = "en";
+var gStatMsgs = { en : {
+			setting_up : "Setting up widget",
+			building_front : "Building interface",
+			getting_lists : "Getting lists",
+			getting_tasks : "Getting tasks",
+			build_tag_list : "Associating tags"
+			} };
 /*
 miscellaneous
 */
@@ -129,6 +137,7 @@ methods to fill out the task list
 NOTE: this *sorely* needs refactoring...
 */
 var populateTasks = function () {
+	statMsg( "getting_tasks" );
 	log("populating tasks");
 	show_waiting(true);
 
@@ -276,6 +285,7 @@ var addTaskToList = function(iter) {  // this == {due:due task:{list_id, name, t
 refresh the tag list at top after repopulating task list
 */
 var refreshTagList = function (tags) {
+	statMsg( "build_tag_list" );
 	log("refreshing tag list");
 	$("#tagList > ul").empty();
 	addTagListItem.call(String("all"));
@@ -382,6 +392,7 @@ var doTagPop = function (e) {
 start task list population
 */
 var populateLists = function () {
+	statMsg( "getting_lists" );
 	log("populating lists popup");
 	show_waiting(true);
 	//gCurrentList = Number($("#lists").get(0).options[$("#lists").get(0).selectedIndex].id.split("_")[1]);
@@ -454,6 +465,7 @@ var loadNewList = function (e) {
 };
 
 var buildFront = function () {
+	statMsg( "building_front" );
 	log("building front");
 	populateLists();
 	populateTasks();
@@ -1093,6 +1105,14 @@ var oldlog = function(s) {
 	$("#evenMore").html($("#evenMore").html() + "\n" + String(s));
 };
 
+var statMsg = function( key ) {
+	_status( gStatMsgs[ gLang ][ key ] );
+};
+
+var _status = function( msg ) {
+	$( ".content", "#statusLine" ).html( msg );
+};
+
 var rtmNormalizeDateStr = function (datestr) {
 	var time = String(datestr.split("T")[1]).replace("Z", "");
 	var date = datestr.split("T")[0];
@@ -1311,13 +1331,6 @@ var adjustForPadMarg = function(dims) {
 	dims.h += extra.y;
 };
 
-var _status = function( msg ) {
-	$( ".content", "#statusLine" ).html( msg );
-};
-var showStatus = function() {
-	$( "#statusLine" ).show();
-};
-
 /*******
 main setup function
 ********/
@@ -1328,8 +1341,10 @@ var setup = function () {
 		$("#evenMore").show();
 		$("#debugChk").attr("value", "on");
 	}*/
-	log = _status;
-	showStatus();
+	//log = _status;
+	
+	$( "#statusLine" ).show();
+	statMsg( "setting_up" );
 
 	log("entering setup");
 
