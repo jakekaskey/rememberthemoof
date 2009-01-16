@@ -252,7 +252,7 @@ var addTaskToList = function(iter) {  // this == {due:due task:{list_id, name, t
 	newItem.children(".title").append($("<a href='' class='taskEdit'>" + name + "</a>"));
 	newItem.children(".due").html(due);
 	if( $.inArray( priority, [ "1", "2", "3" ] ) > -1 )
-		newItem.children( ".prio" ).addClass( "priority" + priority );
+		newItem.addClass( "priowrap" + priority + " hasPrio" );
 	newItem.children(".tags").html(tags);
 	newItem.children(".task_chk").attr("name", "taskchk_" + list_id + "_" + taskseries_id + "_" + task_id);
 	newItem.children(".task_chk").attr("id", "taskchk_" + list_id + "_" + taskseries_id + "_" + task_id);
