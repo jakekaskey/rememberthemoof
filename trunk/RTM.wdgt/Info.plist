@@ -15,15 +15,15 @@
 	<key>CFBundleName</key>
 	<string>Remember the Moof</string>
 	<key>CFBundleShortVersionString</key>
-	<string>caribou</string>
+	<string>emu</string>
 	<key>CFBundleVersion</key>
-	<string>caribou</string>
+	<string>emu</string>
 	<key>CloseBoxInsetX</key>
 	<integer>0</integer>
 	<key>CloseBoxInsetY</key>
 	<integer>0</integer>
 	<key>Height</key>
-	<integer>470</integer>
+	<integer>491</integer>
 	<key>MainHTML</key>
 	<string>rtm.html</string>
 	<key>Width</key>

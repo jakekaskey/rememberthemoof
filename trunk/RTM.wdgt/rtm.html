@@ -37,17 +37,19 @@
 			<div class="section hideOnLoad" id="listsSection">
 			</div>
 			<div class="section hideOnLoad" id="needToAuth">
+				<span class="explain">Remember the Moof isn't authorized with your Remember the Milk account.</span>
 				<a href="">Click here</a> to authorize this app with your RTM account.
 			</div>
 			<div class="section hideOnLoad" id="taskSection">
 				<div id="fullFrame">
-					<span class="left"><a href="" class="goToRTM"><img style="height: 12pt; border: 0;" src="files/rtm_logo_sm.png" /></a></span>
-					<span class="left"><h3>Tasks</h3></span>
-					<span id="waitIcon" class="left"><img src="files/ajax-loader.gif" /></span>
-					<span id="undoPane" class="left"><a href="" id="undoBtn">undo</a></span>
-					<span class="right linkAsBtn" id="showNewTaskPane"><span class="nolink">Add task</span><a href="" class="taskAdd">Add task</a></span>
-					<div style="clear: both;"></div>
-					<div id="listSection" class="left">
+					<div class="headerBar">
+						<span class="item"><a href="" class="goToRTM"><img style="height: 12pt; border: 0;" src="files/rtm_logo_sm.png" /></a></span>
+						<span class="item"><h3>Tasks</h3></span>
+						<span id="waitIcon" class="item"><img src="files/ajax-loader.gif" /></span>
+						<span id="undoPane" class="item"><a href="" id="undoBtn">undo</a></span>
+						<span class="action linkAsBtn" id="showNewTaskPane"><span class="nolink">Add task</span><a href="" class="taskAdd">Add task</a></span>
+					</div>
+					<div id="listSection">
 						<span>List:</span> <select id="lists"></select>
 						<span id="tagPop"><span class="prompt">Tags: </span><span class="shown"></span></span>
 					</div>
@@ -60,7 +62,6 @@
 			</div>
 			<div class="section" id="infoSection">
 				<div class="right" id="infoButton"></div>
-				<span class="right"><!-- input type="submit" value="back" id="showprefsbtn" / --></span>
 				<div style="clear: both;"></div>
 			</div>
 
@@ -92,8 +93,10 @@
 
 	<div id="back">
 		<div class="section">
-			<span class="right" style="width: 30px; margin: 0;"><a href="" class="goToMoof"><img border="0" src="files/moof_dark.png" /></a></span>
-			<span class="left"><h3>This is the back</h3></span>
+			<div id="moofImg"><a href="" class="goToMoof"><img border="0" src="files/moof_dark.png" /></a></div>
+			<h2>Remember the Moof</h2>
+			<span class="ack">Copyright 2009 Malcolm McFarland</span><br/>
+			<span class="ack">See LICENSE.txt for details</span>
 		</div>
 		<div class="section debug">
 			<label for="debugChk">show debug</label> <input type="checkbox" id="debugChk" name="debugChk" />
@@ -117,8 +120,7 @@
 			<a href="" class="goToRTM">http://www.rememberthemilk.com/</a>
 		</div>
 		<div class="section">
-			<!-- span class="right"><input type="submit" value="front" id="hideprefsbtn" /></span -->
-			<div class="right" id="doneBtn"></div>
+			<div id="doneBtn"></div>
 		</div>
 		<div style="clear: both;"></div>
 	</div>
