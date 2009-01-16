@@ -140,23 +140,16 @@ ul {
 	position: relative;
 }
 
-#fullFrame .headerBar {
+.headerBar {
 	width: 100%;
 	overflow: hidden;
 }
-	#fullFrame .headerBar .item {
+	.headerBar .item {
 		float: left;
 	}
-	#fullFrame .headerBar .action {
+	.headerBar .action {
 		float: right;
 	}
-
-#listSection {
-	/*left: 10px;
-	right: 10px;
-	bottom: 10px;
-	top: 10px;*/
-}
 
 /*
 task list
@@ -208,17 +201,17 @@ task list
 	width: 19px;
 } */
 
-#tagPop {
-	margin-left: 8px;
-}
-#tagPop .shown {
-	font-size: .833em;
-	font-weight: bold;
-}
-#tagList {
+.dlog {
 	position: absolute;
 	display: none;
-	background-color: #fff;
+	background-color: #F5F3E5;
+	border: 1px solid #0B8C8F;
+	-webapp-border-radius: 4px;
+	padding: .25em .5em;
+}
+
+#tagList {
+	position: absolute;
 	border: 1px solid #111;
 }
 #tagList li {
@@ -227,14 +220,6 @@ task list
 	line-height: 1.4em;
 	padding: 0 5px;
 }
-
-/*#tagList a {
-	text-decoration: none;
-}
-#tagList a:hover {
-	text-decoration: underline;
-}*/
-
 
 #taskList li.hilite .title a {
 	color: #99ff66 !important;
@@ -265,9 +250,7 @@ task list
 
 
 #taskPane {
-	position: absolute;
 	padding: 8px;
-	background-color: #fff;
 	right: 0;
 	margin: 0;
 	border: 1px solid #333;
@@ -285,10 +268,6 @@ task list
 .linkAsBtn a {
 	color: #69e !important;
 	text-decoration: none;
-}
-
-.linkAsBtn .nolink {
-	display: none;
 }
 
 #leftBanner {
@@ -381,3 +360,35 @@ task list
 }
 
 /* }}} */
+
+
+/* 
+ * filter pane {{{
+ */
+
+#filterPane { }
+.paneSection {
+	padding: .5em;
+	border-top: 1px solid #0B8C8F;
+	font-size: .9em;
+}
+
+.paneSection.first {
+	border-top: 0;
+}
+
+.paneSection .header,
+.paneSection .action {
+	margin: .25em 0;
+}
+
+.paneSection .header {
+	font-weight: bold;
+	font-variant: small-caps;
+	text-decoration: underline;
+}
+.paneSection .action {
+	font-weight: bold;
+}
+.paneSection action
+/* }}} filter pane */

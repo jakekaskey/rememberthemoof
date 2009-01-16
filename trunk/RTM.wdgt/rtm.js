@@ -290,10 +290,6 @@ var refreshTagList = function (tags) {
 
 	$.each(tags, addTagListItem);
 
-	$("#tagPop > .shown").empty();
-	$("#tagPop > .shown").append($("<a href=''>all</a>"));
-	$("#tagPop > .shown > a").click(doTagPop);
-
 	if( gCurrentTag != null && tags.length > 0 ) 
 		for( var i in tags )
 			if( gCurrentTag == tags[i] ) {
@@ -365,7 +361,6 @@ var tagShowOnly = function ( tagName ) {
 			} );
 	}
 
-	$("#tagPop > .shown >  a").text(tagName);
 	$("#tagList").hide();
 
 	makeWindowFit($("#front"));
@@ -375,10 +370,11 @@ var tagShowOnly = function ( tagName ) {
 show list of tags when current tag label is clicked
 */
 var doTagPop = function (e) {
+	var parEl = this;
 	log("showing tag list");
 
-	overlayHideAndSet("tagList");
-	$("#tagList").css({top: $("#tagPop").offset().top, left: $("#tagPop > .shown").offset().left});
+	//overlayHideAndSet("tagList");
+	$("#tagList").css({top: $( parEl ).offset().top, left: $(parEl).offset().left});
 	
 	$("#tagList").slideDown(100, function () { makeWindowFit($("#front")); } );
 
@@ -417,9 +413,6 @@ var populateListsContinue = function (lists) {
 			$("#lists").get(0).selectedIndex = i;
 	}
 	
-	$("#showNewTaskPane").children(".nolink:first").hide();
-	$("#showNewTaskPane").children("a:first").show();
-
 	show_waiting(false);
 	$("#listsSection").show();
 };
@@ -1008,6 +1001,36 @@ var updateTask = function (e) {
 	log("finished sending off updates");
 };
 
+var showFilterPane = function( e ) {
+	var el = this;
+	$( "#filterPane" ).css( { "top" : $( el ).offset().top, "left" : $( el ).offset().left } );
+
+	$( "#filterPane" ).slideDown();
+	return false;
+};
+
+var delegateFilter = function() {
+	var el = this;
+	var action = null;
+	var clsNms = el.className.split( /[ ]+/ );
+
+	for( var i in clsNms ) {
+		if( /filter_.*/.test( clsNms[i] ) )
+			action = clsNms[i].split( "filter_" )[1];
+	}
+
+	if( action )
+		_task_filters[ action ]();
+	
+	return false;
+};
+
+var _task_filters = {
+	none : function() { emergencyLog( "filter none" ); },
+	month : function() { emergencyLog( "filter month" ); },
+	week : function() { emergencyLog( "filter week" ); },
+	today : function() { emergencyLog( "filter today" ); }
+};
 /*
 only continue if all three are done
 */
@@ -1374,6 +1397,11 @@ var adjustForPadMarg = function(dims) {
 	dims.h += extra.y;
 };
 
+var hideDlog = function () {
+	$( this ).parents( ".dlog:first" ).slideUp();
+	return false;
+};
+
 /*******
 main setup function
 ********/
@@ -1418,7 +1446,6 @@ var setup = function () {
 		gInfoBtn = new AppleInfoButton($("#infoButton").get(0), $("#front").get(0), "black", "black", showPrefs);
 		gDoneBtn = new AppleGlassButton($("#doneBtn").get(0), "Done", hidePrefs);
 
-
 		// correct apple's draconian positioning
 		var info_img = $("#infoButton").children("img:first");
 		$("#infoButton").css({position: "relative", width: info_img.attr("width"), height:info_img.attr("height")}); 
@@ -1446,6 +1473,19 @@ var setup = function () {
 	$("#taskPane > .taskName > input").keyup(updateTaskPane);
 	$("#taskPane > #taskCancel").click(hideTaskPane);
 
+	/*
+	 * filter setup
+	 */
+	$( ".showFilterPane" ).click( showFilterPane );
+	$( "a.filter", "#filterPane" ).click( delegateFilter );
+
+	$( ".show_tags" ).click( doTagPop );
+
+
+	/*
+	 * generic dialog setup
+	 */
+	$( "a.cancel", ".dlog" ).click( hideDlog );
 	/*
 	fancy link coloring
 	*/

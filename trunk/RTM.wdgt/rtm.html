@@ -47,11 +47,11 @@
 						<span class="item"><h3>Tasks</h3></span>
 						<span id="waitIcon" class="item"><img src="files/ajax-loader.gif" /></span>
 						<span id="undoPane" class="item"><a href="" id="undoBtn">undo</a></span>
-						<span class="action linkAsBtn" id="showNewTaskPane"><span class="nolink">Add task</span><a href="" class="taskAdd">Add task</a></span>
+						<span class="action linkAsBtn" id="showNewTaskPane"><a href="" class="taskAdd">Add task</a></span>
 					</div>
-					<div id="listSection">
-						<span>List:</span> <select id="lists"></select>
-						<span id="tagPop"><span class="prompt">Tags: </span><span class="shown"></span></span>
+					<div id="viewBar" class="headerBar">
+						<div class="item"><span>List:</span> <select id="lists"></select></div>
+						<div class="item linkAsBtn"><a href="" class="showFilterPane">Filter</a></div>
 					</div>
 					<div style="clear: both;"></div>
 					<div id="taskListWrapper">
@@ -66,7 +66,7 @@
 			</div>
 
 			<!-- independently floated -->
-			<div id="taskPane" class="hideOnLoad">
+			<div id="taskPane" class="hideOnLoad dlog onresize">
 				<span class="taskList"><label>googly</label> <span></span></span>
 				<span class="taskName"><label>Name:</label> <input type="text" class="user" /><input type="hidden" class="orig" /></span>
 				<span class="taskDueDate"><label>Due:</label> <input type="text" class="user" /><input type="hidden" class="orig" /></span>
@@ -74,13 +74,33 @@
 				<input type="hidden" class="extraInfo" />
 				<input type="submit" id="taskCancel" value="Never mind"/>&nbsp;&nbsp;<input type="submit" id="taskSubmit" value="googly" disabled="true" />
 			</div>
+
+			<div id="filterPane" class="hideOnLoad dlog onresize">
+				<div class="paneSection first">
+					<div class="action"><a href="" class="filter filter_none">None</a></div>
+				</div>
+				<div class="paneSection">
+					<div class="header">By Date</div>
+					<div class="action"><a href="" class="filter filter_month">This month</a></div>
+					<div class="action"><a href="" class="filter filter_week">This week</a></div>
+					<div class="action"><a href="" class="filter filter_today">Today</a></div>
+				</div>
+				<div class="paneSection">
+					<div class="action"><a href="" class="show_tags">By Tag</a></div>
+				</div>
+
+				<div class="paneSection">
+					<div class="action"><a href="" class="cancel">Cancel</a></div>
+				</div>
+			</div>
+
 			<div id="statusLine" >
 				<div class="indicator"></div>
 				<div class="output">
 					<span class="content">istuff</span>
 				</div>
 			</div>
-			<div id="tagList">
+			<div id="tagList" class="onresize hideOnLoad">
 				<ul>
 					<li><span class="name"><a href="">a tag</a></span></li>
 				</ul>
