@@ -67,12 +67,12 @@
 
 			<!-- independently floated -->
 			<div id="taskPane" class="hideOnLoad dlog sizeToMe">
-				<span class="taskList"><label>googly</label> <span></span></span>
-				<span class="taskName"><label>Name:</label> <input type="text" class="user" /><input type="hidden" class="orig" /></span>
-				<span class="taskDueDate"><label>Due:</label> <input type="text" class="user" /><input type="hidden" class="orig" /></span>
-				<span class="taskTags"><label>Tags:</label> <input type="text" class="user" /><input type="hidden" class="orig" /></span>
+				<div class="taskList"><label>googly</label> <span></span></div>
+				<div class="taskName"><label>Name:</label> <input type="text" class="user" /><input type="hidden" class="orig" /></div>
+				<div class="taskDueDate"><label>Due:</label> <input type="text" class="user" /><input type="hidden" class="orig" /></div>
+				<div class="taskTags"><label>Tags:</label> <input type="text" class="user" /><input type="hidden" class="orig" /></div>
 				<input type="hidden" class="extraInfo" />
-				<input type="submit" id="taskCancel" value="Never mind"/>&nbsp;&nbsp;<input type="submit" id="taskSubmit" value="googly" disabled="true" />
+				<div><input type="submit" id="taskCancel" value="Never mind"/>&nbsp;&nbsp;<input type="submit" id="taskSubmit" value="googly" disabled="true" /></div>
 			</div>
 
 			<div id="filterPane" class="hideOnLoad dlog sizeToMe">
@@ -87,10 +87,6 @@
 				</div>
 				<div class="paneSection">
 					<div class="action"><a href="" class="show_tags">By Tag</a></div>
-				</div>
-
-				<div class="paneSection">
-					<div class="action"><a href="" class="cancel">close</a></div>
 				</div>
 			</div>
 
