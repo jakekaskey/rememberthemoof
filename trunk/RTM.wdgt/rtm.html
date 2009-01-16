@@ -66,7 +66,7 @@
 			</div>
 
 			<!-- independently floated -->
-			<div id="taskPane" class="hideOnLoad dlog onresize">
+			<div id="taskPane" class="hideOnLoad dlog sizeToMe">
 				<span class="taskList"><label>googly</label> <span></span></span>
 				<span class="taskName"><label>Name:</label> <input type="text" class="user" /><input type="hidden" class="orig" /></span>
 				<span class="taskDueDate"><label>Due:</label> <input type="text" class="user" /><input type="hidden" class="orig" /></span>
@@ -75,9 +75,9 @@
 				<input type="submit" id="taskCancel" value="Never mind"/>&nbsp;&nbsp;<input type="submit" id="taskSubmit" value="googly" disabled="true" />
 			</div>
 
-			<div id="filterPane" class="hideOnLoad dlog onresize">
+			<div id="filterPane" class="hideOnLoad dlog sizeToMe">
 				<div class="paneSection first">
-					<div class="action"><a href="" class="filter filter_none">None</a></div>
+					<div class="action"><a href="" class="filter filter_none">Clear</a></div>
 				</div>
 				<div class="paneSection">
 					<div class="header">By Date</div>
@@ -90,7 +90,7 @@
 				</div>
 
 				<div class="paneSection">
-					<div class="action"><a href="" class="cancel">Cancel</a></div>
+					<div class="action"><a href="" class="cancel">close</a></div>
 				</div>
 			</div>
 
@@ -100,7 +100,7 @@
 					<span class="content">istuff</span>
 				</div>
 			</div>
-			<div id="tagList" class="onresize hideOnLoad">
+			<div id="tagList" class="sizeToMe hideOnLoad dlog">
 				<ul>
 					<li><span class="name"><a href="">a tag</a></span></li>
 				</ul>
