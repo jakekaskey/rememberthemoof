@@ -145,6 +145,9 @@ ul {
 	overflow: hidden;
 }
 	.headerBar .item {
+		margin-right: .5em;
+		height: 2em;
+		vertical-align: middle;
 		float: left;
 	}
 	.headerBar .action {
@@ -207,10 +210,24 @@ task list
 	background-color: #F5F3E5;
 	border: 1px solid #0B8C8F;
 	-webapp-border-radius: 4px;
+}
+
+.dlog .content {
+	position: relative;
 	padding: .25em .5em;
 }
 
+.dlog .close {
+	position: absolute;
+	top: 2px;
+	right: 2px;
+	width: .75em;
+	height: .75em;
+	font-size: .8em;
+}
+
 #tagList {
+	margin: 0;
 }
 #tagList li {
 	font-size: .833em;
@@ -252,10 +269,6 @@ task list
 	right: 0;
 	margin: 0;
 	border: 1px solid #333;
-}
-
-#taskPane > span {
-	display: block;
 }
 
 .linkAsBtn {

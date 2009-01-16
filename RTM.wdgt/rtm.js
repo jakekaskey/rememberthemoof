@@ -822,48 +822,48 @@ var setupTaskPane = function (e) {
 		date = par_li.children(".due").html();
 		tags = par_li.children(".tags").html();
 
-		$("#taskPane > .extraInfo").val(par_li.children(".task_chk").attr("id").replace("taskchk_", ""));
-		log("extraInfo: " + $("#taskPane > .extraInfo").val());
+		$(".extraInfo", "#taskPane").val(par_li.children(".task_chk").attr("id").replace("taskchk_", ""));
+		log("extraInfo: " + $(".extraInfo", "#taskPane").val());
 		pane_top = par_li.offset().top - ($("#taskPane").height() / 3);
 	}
 	/* 
 	this gets both the visibile and the hidden 'orig' values at once 
 	*/
-	$("#taskPane > .taskName > input").val(name);
-	$("#taskPane > .taskDueDate > input").val(date);
-	$("#taskPane > .taskTags > input").val(tags);
+	$(".taskName > input", "#taskPane").val(name);
+	$(".taskDueDate > input", "#taskPane").val(date);
+	$(".taskTags > input", "#taskPane").val(tags);
 
-	$("#taskPane > .taskList > span").empty();
+	$(".taskList > span", "#taskPane").empty();
 
 	var new_lists = makeListsList();
-	$("#taskPane > .taskList > span").append(new_lists);
+	$(".taskList > span", "#taskPane").append(new_lists);
 
 
 	/*
 	objective-specific setup
 	*/
-	$("#taskPane > #taskSubmit").unbind("click");
+	$("#taskSubmit", "#taskPane").unbind("click");
 	$("#taskPane").css("top", pane_top);
 
 	overlayHideAndSet("taskPane");
 
 	if(newTask) {
-		$("#taskPane > .taskTags").hide();
-		$("#taskPane > .taskList").show();
+		$(".taskTags", "#taskPane").hide();
+		$(".taskList", "#taskPane").show();
 		$("#taskPane").removeClass("taskEdit").addClass("taskAdd");
-		$("#taskPane > .taskList > label").html("Add to:");
-		$("#taskPane > #taskSubmit").click(addNewTask).val("Add task");
-		$("#taskPane > #taskSubmit").attr("disabled", true);
-		$("#taskPane").slideDown(200, function() { makeWindowFit($("#front")); $("#taskPane > .taskName > input.user").focus(); } );
+		$(".taskList > label", "#taskPane").html("Add to:");
+		$("#taskSubmit", "#taskPane").click(addNewTask).val("Add task");
+		$("#taskSubmit", "#taskPane").attr("disabled", true);
+		$("#taskPane").slideDown(200, function() { makeWindowFit($("#front")); $(".taskName > input.user", "#taskPane").focus(); } );
 	} else {
-		$("#taskPane > .taskTags").show();
-		$("#taskPane > .taskList").hide();
+		$(".taskTags", "#taskPane").show();
+		$(".taskList", "#taskPane").hide();
 		$("#taskPane").removeClass("taskAdd").addClass("taskEdit");
-		$("#taskPane > .taskList > label").html("List:");
-		$("#taskPane > #taskSubmit").click(updateTask).val("Update task");
-		$("#taskPane > #taskSubmit").attr("disabled", false);
+		$(".taskList > label", "#taskPane").html("List:");
+		$("#taskSubmit", "#taskPane").click(updateTask).val("Update task");
+		$("#taskSubmit", "#taskPane").attr("disabled", false);
 		
-		$("#taskPane").show(200, function () { makeWindowFit($("#front")); $("#taskPane > .taskName > input.user").focus(); } );
+		$("#taskPane").show(200, function () { makeWindowFit($("#front")); $(".taskName > input.user", "#taskPane").focus(); } );
 	}
 
 	return false;
@@ -913,22 +913,22 @@ var hideTaskPane = function (e) {
 
 var updateTaskPane = function (e) {
 	if($(e.target).val().length > 0)
-		$("#taskPane > #taskSubmit").attr("disabled", false);
+		$("#taskSubmit", "#taskPane").attr("disabled", false);
 	else
-		$("#taskPane > #taskSubmit").attr("disabled", true);
+		$("#taskSubmit", "#taskPane").attr("disabled", true);
 		
 	return false;
 };
 
 var addNewTask = function (e) {
-	log("new task name: " + $("#taskPane > .taskName > .user").val());
+	log("new task name: " + $(".taskName > .user", "#taskPane").val());
 
-	var args = {name: $("#taskPane > .taskName > .user").val(), timeline: rtmTimeline()};
-	if($("#taskPane > .taskDueDate > .user").val().length > 0) {
-		args.name = args.name + " " + $("#taskPane > .taskDueDate > .user").val();
+	var args = {name: $(".taskName > .user", "#taskPane").val(), timeline: rtmTimeline()};
+	if($(".taskDueDate > .user", "#taskPane").val().length > 0) {
+		args.name = args.name + " " + $(".taskDueDate > .user", "#taskPane").val();
 		args.parse = "1";
 	}
-	var sel_list_id = $("#taskPane > .taskList > span > select").get(0).options[$("#taskPane > .taskList > span > select").get(0).selectedIndex].id.split("_")[1];
+	var sel_list_id = $(".taskList > span > select", "#taskPane").get(0).options[$(".taskList > span > select", "#taskPane").get(0).selectedIndex].id.split("_")[1];
 	if(Number(sel_list_id) > 0) {
 		args.list_id = String(sel_list_id);
 	}
@@ -936,12 +936,12 @@ var addNewTask = function (e) {
 	/*rtmCall("rtm.tasks.add", args);
 	hideTaskPane();
 	populateTasks();*/
-	$("#taskPane > #taskSubmit").attr("disabled", true);
+	$("#taskSubmit", "#taskPane").attr("disabled", true);
 	rtmCallAsync("rtm.tasks.add", args, false, function(r, t) { log("task add returned with status " + t); hideTaskPane(); populateTasks(); } );
 };
 
 var updateTask = function (e) {
-	var extraInfo = $("#taskPane > .extraInfo").val().split("_");
+	var extraInfo = $(".extraInfo", "#taskPane").val().split("_");
 	var attr;
 	log("task info: " + extraInfo.join(", "));
 
@@ -954,45 +954,45 @@ var updateTask = function (e) {
 	to make sure we don't continue prematurely....
 	*/
 	gInProgress = 0;
-	if($("#taskPane > .taskName > input.user").val() != $("#taskPane > .taskName > input.orig").val()) {
+	if($(".taskName > input.user", "#taskPane").val() != $(".taskName > input.orig", "#taskPane").val()) {
 		gInProgress += 1;
-		$("#taskPane > #taskSubmit").attr("disabled", true);
+		$("#taskSubmit", "#taskPane").attr("disabled", true);
 		attr = {
 			timeline: rtmTimeline(),
 			list_id: extraInfo[0],
 			taskseries_id: extraInfo[1],
 			task_id: extraInfo[2],
-			name: $("#taskPane > .taskName > input.user").val()
+			name: $(".taskName > input.user", "#taskPane").val()
 			};
 		log("updating task name to " + attr.name);
 		rtmCallAsync("rtm.tasks.setName", attr, false, updateTaskContinue);
 	}
-	if($("#taskPane > .taskDueDate > input.user").val() != $("#taskPane > .taskDueDate > input.orig").val()) {
+	if($(".taskDueDate > input.user", "#taskPane").val() != $(".taskDueDate > input.orig", "#taskPane").val()) {
 		gInProgress += 1;
-		$("#taskPane > #taskSubmit").attr("disabled", true);
+		$("#taskSubmit", "#taskPane").attr("disabled", true);
 		attr = {
 			timeline: rtmTimeline(),
 			list_id: extraInfo[0],
 			taskseries_id: extraInfo[1],
 			task_id: extraInfo[2]
 			};
-		if($("#taskPane > .taskDueDate > input.user").val().length > 0) {
-			log ("new due date: " + $("#taskPane > .taskDueDate > input.user").val());
-			attr.due = $("#taskPane > .taskDueDate > input.user").val();
+		if($(".taskDueDate > input.user", "#taskPane").val().length > 0) {
+			log ("new due date: " + $(".taskDueDate > input.user", "#taskPane").val());
+			attr.due = $(".taskDueDate > input.user", "#taskPane").val();
 			attr.parse = "1";
 		} else { log("no due date..."); }
 		log("updating due date to " + attr.due);
 		rtmCallAsync("rtm.tasks.setDueDate", attr, false, updateTaskContinue);
 	}
-	if($("#taskPane > .taskTags > input.user").val() != $("#taskPane > .taskTags > input.orig").val()) {
+	if($(".taskTags > input.user", "#taskPane").val() != $(".taskTags > input.orig", "#taskPane").val()) {
 		gInProgress += 1;
-		$("#taskPane > #taskSubmit").attr("disabled", true);
+		$("#taskSubmit", "#taskPane").attr("disabled", true);
 		attr = {
 			timeline: rtmTimeline(),
 			list_id: extraInfo[0],
 			taskseries_id: extraInfo[1],
 			task_id: extraInfo[2],
-			tags: $("#taskPane > .taskTags > input.user").val()
+			tags: $(".taskTags > input.user", "#taskPane").val()
 			};
 		log("updating tags to " + attr.tags);
 		rtmCallAsync("rtm.tasks.setTags", attr, false, updateTaskContinue);
@@ -1341,6 +1341,17 @@ var linkManip  = function (el, makeLink) {
 };
 
 /*
+ * dialog builder!
+ */
+
+var _buildDlog = function () {
+	$( this ).wrapInner( "<div class='content'></div>" );
+	$( this ).append( "<div class='close'>x</div>" );
+
+	$( ".close", this ).click( hideDlog );
+}
+
+/*
 resize the window to fit when necessary
 */
 var makeWindowFit = function(el) {
@@ -1458,8 +1469,8 @@ var setup = function () {
 	taskPane setup -- we've generalized this!
 	*/
 	$(".taskAdd, .taskEdit").click(setupTaskPane);
-	$("#taskPane > .taskName > input").keyup(updateTaskPane);
-	$("#taskPane > #taskCancel").click(hideTaskPane);
+	$(".taskName > input", "#taskPane").keyup(updateTaskPane);
+	$("#taskCancel", "#taskPane").click(hideTaskPane);
 
 	/*
 	 * filter setup
@@ -1473,7 +1484,8 @@ var setup = function () {
 	/*
 	 * generic dialog setup
 	 */
-	$( "a.cancel", ".dlog" ).click( hideDlog );
+	$( ".dlog" ).each( _buildDlog );
+
 	/*
 	fancy link coloring
 	*/
