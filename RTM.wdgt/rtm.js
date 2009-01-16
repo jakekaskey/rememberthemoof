@@ -285,7 +285,7 @@ refresh the tag list at top after repopulating task list
 var refreshTagList = function (tags) {
 	statMsg( "build_tag_list" );
 	log("refreshing tag list");
-	$("#tagList > ul").empty();
+	$("ul", "#tagList").empty();
 	addTagListItem.call(String("all"));
 
 	$.each(tags, addTagListItem);
@@ -314,7 +314,7 @@ var addTagListItem = function () {
 	newli.children("a").click(getTagClick);
 	newli.show();
 
-	$("#tagList > ul").append(newli);
+	$("ul", "#tagList").append(newli);
 };
 
 var tagListOver = function () { 
@@ -813,7 +813,7 @@ var setupTaskPane = function (e) {
 	var name = "";
 	var date = "";
 	var tags = "";
-	var pane_top = $(e.target).offset().top;
+	var dims = _absPos( e.target );
 
 	if(!newTask) {
 		// populate name, date, tags, extraInfo
@@ -824,7 +824,6 @@ var setupTaskPane = function (e) {
 
 		$(".extraInfo", "#taskPane").val(par_li.children(".task_chk").attr("id").replace("taskchk_", ""));
 		log("extraInfo: " + $(".extraInfo", "#taskPane").val());
-		pane_top = par_li.offset().top - ($("#taskPane").height() / 3);
 	}
 	/* 
 	this gets both the visibile and the hidden 'orig' values at once 
@@ -843,9 +842,9 @@ var setupTaskPane = function (e) {
 	objective-specific setup
 	*/
 	$("#taskSubmit", "#taskPane").unbind("click");
-	$("#taskPane").css("top", pane_top);
 
-	overlayHideAndSet("taskPane");
+	$( "#taskPane" ).css( { 'top' : dims.y } );
+	overlayHideAndSet( "#taskPane" );
 
 	if(newTask) {
 		$(".taskTags", "#taskPane").hide();
@@ -1001,12 +1000,28 @@ var updateTask = function (e) {
 	log("finished sending off updates");
 };
 
-var showFilterPane = function( e ) {
+var showDlog = function( dlog, e ) {
 	var el = this;
-	$( "#filterPane" ).css( { "top" : $( el ).offset().top, "left" : $( el ).offset().left } );
+	var dims = _absPos( el );
+	
+	$( dlog ).css( { "top" : dims.y, "left" : dims.x } );
+	$( dlog ).slideDown();
 
-	$( "#filterPane" ).slideDown();
 	return false;
+};
+
+var _absPos = function( el ) {
+	var dims = { y : $( el ).offset().top, x : $( el ).offset().left };
+
+	while( el != "undefined" && el != document.body && el != document ) {
+		dims.y = dims.y - Number( /[0-9]+/.exec( $( el ).css( "padding-top" ) ) );
+		dims.y = dims.y - Number( /[0-9]+/.exec( $( el ).css( "margin-top" ) ) );
+		dims.x = dims.x - Number( /[0-9]+/.exec( $( el ).css( "padding-left" ) ) );
+		dims.x = dims.x - Number( /[0-9]+/.exec( $( el ).css( "margin-left" ) ) );
+		el = el.parentNode;
+	}
+
+	return dims;
 };
 
 var delegateFilter = function() {
@@ -1344,12 +1359,12 @@ var linkManip  = function (el, makeLink) {
  * dialog builder!
  */
 
-var _buildDlog = function () {
+var _buildDlog = function ( lnk ) {
 	$( this ).wrapInner( "<div class='content'></div>" );
 	$( this ).append( "<div class='close'>x</div>" );
 
 	$( ".close", this ).click( hideDlog );
-}
+};
 
 /*
 resize the window to fit when necessary
@@ -1397,7 +1412,7 @@ var adjustForPadMarg = function(dims) {
 };
 
 var hideDlog = function () {
-	$( this ).parents( ".dlog:first" ).slideUp();
+	$( this ).parents( ".dlog:first" ).slideUp( 100 );
 	return false;
 };
 
@@ -1475,16 +1490,15 @@ var setup = function () {
 	/*
 	 * filter setup
 	 */
-	$( ".showFilterPane" ).click( showFilterPane );
 	$( "a.filter", "#filterPane" ).click( delegateFilter );
-
-	$( ".show_tags" ).click( doTagPop );
 
 
 	/*
-	 * generic dialog setup
+	 * dialog setup
 	 */
 	$( ".dlog" ).each( _buildDlog );
+	$( ".showFilterPane" ).click( showDlog.curry( $( "#filterPane" ).get(0) ) );
+	$( ".show_tags" ).click( showDlog.curry( $( "#tagList" ).get(0) ) );
 
 	/*
 	fancy link coloring
