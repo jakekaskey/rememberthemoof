@@ -1350,30 +1350,18 @@ var makeWindowFit = function(el) {
 		adjustForPadMarg.call(el, newdims);
 		log("post-adjustment dims: w=" + newdims.w + ", h=" + newdims.h);
 
-		if($("#taskPane").css("display") != "none") {
-			/*
-			accomodate taskPane
-			*/
-			var tp_dims = {w: $("#taskPane").width(), h: $("#taskPane").height()};
-			adjustForPadMarg.call($("#taskPane"), tp_dims);
+		$( ".sizeToMe" ).each( function() {
+			var el = this;
+			if($( el ).css("display") != "none") {
+				var tp_dims = {w: $( el ).width(), h: $( el ).height()};
+				adjustForPadMarg.call($( el ), tp_dims);
 
-			log("taskpane dims: w=" + tp_dims.w + ", h=" + tp_dims.h);
+				log("taskpane dims: w=" + tp_dims.w + ", h=" + tp_dims.h);
 
-			newdims.h = Math.max( newdims.h, tp_dims.h + $("#taskPane").offset().top );
-			newdims.w = Math.max( newdims.w, tp_dims.w + $("#taskPane").offset().left );
-		}
-		if($("#tagList").css("display") != "none") {
-			/*
-			same for tagList
-			*/
-			var tl_dims = {w: $("#tagList").width(), h: $("#tagList").height()};
-			adjustForPadMarg.call($("#tagList"), tl_dims);
-
-			log("taglist dims: w=" + tl_dims.w + ", h=" + tl_dims.h);
-
-			if(tl_dims.h + $("#tagList").offset().top > newdims.h) newdims.h = tl_dims.h + $("#tagList").offset().top;
-			if(tl_dims.w + $("#tagList").offset().left > newdims.w) newdims.w = tl_dims.w + $("#tagList").offset().left;
-		}
+				newdims.h = Math.max( newdims.h, tp_dims.h + $( el ).offset().top );
+				newdims.w = Math.max( newdims.w, tp_dims.w + $( el ).offset().left );
+			}
+		} );
 
 		log("resizing to: w=" + newdims.w + ", h=" + newdims.h);
 

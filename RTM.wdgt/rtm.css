@@ -211,8 +211,6 @@ task list
 }
 
 #tagList {
-	position: absolute;
-	border: 1px solid #111;
 }
 #tagList li {
 	font-size: .833em;
