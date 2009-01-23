@@ -1005,7 +1005,7 @@ var showDlog = function( dlog, e ) {
 	var dims = _absPos( el );
 	
 	$( dlog ).css( { "top" : dims.y, "left" : dims.x } );
-	$( dlog ).slideDown();
+	$( dlog ).slideDown(50, makeWindowFit.curry( $( "#front" ) ) );
 
 	return false;
 };
