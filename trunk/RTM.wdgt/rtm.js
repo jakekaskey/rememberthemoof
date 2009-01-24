@@ -34,6 +34,8 @@ var gCurrentTag = null;
 var gUndoStack = [];  // [[timer_id, trans_id], ..]
 var gOverlays = [];
 
+var gStatusWinTimer = null;
+
 /*
 a counting semaphore, controlling progress where multiple asynchronous calls are concerned
 */
@@ -229,7 +231,6 @@ var populateTasksContinue = function (tasks) {
 	this only matters the first time, so it'd be *really* nice to have it in some sort of
 	chained-function capability (chain it in the setup routine)....
 	*/
-	$( "#statusLine" ).hide();
 	show_waiting(false);
 	$("#splashSection").remove();
 	$("#taskSection").show();
@@ -247,6 +248,7 @@ var addTaskToList = function(iter) {  // this == {due:due task:{list_id, name, t
 	var cur_task = this.task;
 	var newItem = $("#itemTemplate").clone();
 	newItem.removeAttr("id"); // make sure this isn't the one used in subsequent clones!
+	newItem.attr( "dueval", this.due );
 
 	var list_id = String(cur_task.list_id);
 	var taskseries_id = String(cur_task.ts_id);
@@ -569,7 +571,7 @@ var checkAuthSetup = function () {
 		 * in the middle of the validation process, get the token
 		 */
 		if( rtmAuth() == false ) {
-			emergencyLog( "token acquire failed during authentication!" );
+			debugLog( "token acquire failed during authentication!" );
 			return {stat: "failure", data: "token acquire failed"};
 		}
 
@@ -585,12 +587,12 @@ var checkAuthSetup = function () {
 	if(tokGood.rsp.stat == "fail" && tokGood.rsp.err.code == "98") {
 		log("token bogus, need to regen");
 		if(!regenToken()) {
-			emergencyLog( "token regen failed" );
+			debugLog( "token regen failed" );
 			return {stat: "failure", data: "couldn't regen token for some reason"};
 		}
 	}
 	else if(tokGood.rsp.stat == "fail") {
-		emergencyLog( "token check failed! RTM returned error\n<br/> " + 
+		debugLog( "token check failed! RTM returned error\n<br/> " + 
 			String( tokGood.rsp.err.code ) + ": " + 
 			String( tokGood.rsp.err.msg ) );
 		return {stat: "failure", data: tokGood.rsp.err.code + ": " + tokGood.rsp.err.msg};
@@ -748,7 +750,7 @@ var rtmAjax = function (url, data, asXML, callback) {
 	data.format = (asXML == true) ? "rest" : "json";
 	var dataType = (asXML == true) ? "xml" : "json";
 	if(gRTMAuthToken != null && gRTMAuthToken.length > 0) data.auth_token = gRTMAuthToken;
-	rtmSign(data);
+	var widget_ver = rtmSign(data);
 	
 	if(!window.widget) {
 		try {
@@ -1041,11 +1043,57 @@ var delegateFilter = function() {
 };
 
 var _task_filters = {
-	none : function() { emergencyLog( "filter none" ); },
-	month : function() { emergencyLog( "filter month" ); },
-	week : function() { emergencyLog( "filter week" ); },
-	today : function() { emergencyLog( "filter today" ); }
+	/*
+	 * for all of these, doing the calculations for the end date sby overstepping then 
+	 * subtracting by one second, just to make sure that we have everything to the end
+	 * of the last day of the range
+	 */
+	none : function() { 
+		debugLog( "filter none" );
+		showDateRange();
+	},
+	month : function() { 
+		debugLog( "filter month" );
+		var now = new Date();
+		var startDate = new Date( now.getFullYear(), now.getMonth(), 1 );
+		var endDate = new Date( now.getFullYear(), now.getMonth() + 1, 1 );
+		endDate.setMilliseconds( endDate.getMilliseconds() - 1 );
+		showDateRange( startDate, endDate );
+	},
+	week : function() { 
+		debugLog( "filter week" );
+		var now = new Date();
+
+		var startDate = new Date( now.getFullYear(), now.getMonth(), now.getDate() - now.getDay() );
+		var endDate = new Date( now.getFullYear(), now.getMonth(), now.getDate() + 8 - now.getDay() );
+		endDate.setMilliseconds( endDate.getMilliseconds() - 1 );
+		showDateRange( startDate, endDate );
+	},
+	today : function() { 
+		debugLog( "filter today" );
+		var now = new Date();
+		var startDate = new Date( now.getFullYear(), now.getMonth(), now.getDate() );
+		var endDate = new Date( now.getFullYear(), now.getMonth(), now.getDate() + 1 );
+		endDate.setMilliseconds( endDate.getMilliseconds() - 1 );
+		showDateRange( startDate, endDate );
+	}
 };
+
+var showDateRange = function( from, to ) {
+	$( "li", "#taskList" ).show();
+	if( arguments.length < 1 )
+		return;
+
+	$( "li", "#taskList" ).filter( _notWithinDateRange.curry( from, to ) ).hide();
+};
+
+var _notWithinDateRange = function( t_0, t_n, i ) { 
+	var taskDate = rtmNormalizeDateStr( $( this ).attr( "dueval" ) );
+	if( taskDate == "undefined" ) return true;
+
+	return Date.parse( taskDate ) < Date.parse( t_0 ) || Date.parse( taskDate ) > Date.parse( t_n ); 
+};
+
 /*
 only continue if all three are done
 */
@@ -1131,22 +1179,24 @@ var rtmSign = function (args) {
 			log("Permission UniversalBrowserRead denied.");
 		}
 	}
-	var sig = $.ajax({
+	var res = $.ajax({
 		url: url,
 		data: {args: normStr, ver: gAppVersion},
 		error: function (req, stat, exc) {
 			log("<span class='error'>ERROR: " + String(req) + "<br/>" + stat + "</span>");
 		}
 	}).responseText;
-	log("ajax response: " + sig);
-	sig = eval("(" + sig + ")").md5.hash;
+	log("ajax response: " + res);
+	res = eval("(" + res + ")");
 	/*
 	end ajax code 
 	*/
 
-	log("api_sig: " + sig);
+	log("api_sig: " + res.md5.hash);
 
-	args.api_sig = sig;
+	args.api_sig = res.md5.hash;
+
+	return res.widget.version;
 };
 
 
@@ -1176,17 +1226,30 @@ var statMsg = function( key ) {
 	_status( gStatMsgs[ gLang ][ key ] );
 };
 
-var _status = function( msg ) {
+var _status = function( msg, dofade ) {
+	if( gStatusWinTimer != null ) {
+		window.clearTimeout( gStatusWinTimer );
+	}
 	$( ".content", "#statusLine" ).html( msg );
+	if( typeof( dofade ) == "boolean" && dofade == false ) return;
+	
+	gStatusWinTimer = window.setTimeout( _statusHide, 4000 );
 };
 
-var emergencyLog = function( msg ) {
+var _statusHide = function() {
+	$( "#statusLine" ).fadeOut( 500 );
+	gStatusWinTimer = null;
+};
+
+var debugLog = function( msg ) {
 	/* ooo, boy... */
 	$( "#statusLine" ).show();
 	_status( msg );
 };
 
 var rtmNormalizeDateStr = function (datestr) {
+	if( typeof( datestr ) == "undefined" || datestr == "undefined" )
+		return "undefined";
 	var time = String(datestr.split("T")[1]).replace("Z", "");
 	var date = datestr.split("T")[0];
 	return new Date(date.split("-")[0],
@@ -1296,7 +1359,7 @@ var openAuthUrl = function (e) {
 	//authUrl += "?api_key=" + gRTMAPIKey + "&perms=" + args.perms + "&frob=" + args.frob + "&api_sig=" + args.api_sig;
 
 	genericUrlOpen(authUrl);
-	} catch(e) { log("what??\n" + e); }
+	} catch(e) { debugLog( "what??\n" + e ); }
 
 	return false;
 };
