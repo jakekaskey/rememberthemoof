@@ -29,6 +29,8 @@ ul {
 	margin: 0;
 }
 
+.demure { font-size: .75em; }
+
 #mainWrapper {
 	margin: 0px;
 	padding: 0px;
@@ -217,7 +219,7 @@ task list
 	padding: .25em .5em;
 }
 
-.dlog .close {
+.dlog .closeBox {
 	position: absolute;
 	top: 2px;
 	right: 2px;
@@ -227,7 +229,7 @@ task list
 	padding: 1px;
 }
 
-.dlog .close:hover {
+.dlog .closeBox:hover {
 	background-color: #666;
 	opacity: .5;
 }
@@ -240,6 +242,24 @@ task list
 	font-weight: bold;
 	line-height: 1.4em;
 	padding: 0 5px;
+}
+
+#verPop {
+	text-align: center;
+	position: absolute;
+	left: 3px;
+	right: 3px;
+	top: 35%;
+}
+#verPop .head,
+#verPop .content {
+	margin-bottom: .25em;
+}
+#verPop p,
+#verPop h1{
+	font-weight: bold;
+	padding:  0 .5em .25em .5em;
+	margin: 0;
 }
 
 #taskList li.hilite .title a {

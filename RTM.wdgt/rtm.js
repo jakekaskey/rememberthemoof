@@ -59,8 +59,16 @@ var gStatMsgs = { en : {
 miscellaneous
 */
 var gDEBUG = false;
-var gAppVersion = "emu";
+var gAppVersion = "emu_rc1";
+var gCountsBetweenVersionChecks = 10;
 
+/* defaults, reset by server
+ *
+ * not the best way to set these, but this whole code base could stand to 
+ * be more modular
+ */
+var gServerVer = gAppVersion;
+var gServerUrl = "http://www.hoprocker.net/rtm/";
 
 var showPrefs = function () { 
 	if(window.widget)
@@ -473,8 +481,41 @@ var buildFront = function () {
 		setupNewAuth();
 	}
 
+	checkVersionFunc( { 'ver' : gServerVer, 'url' : gServerUrl } );
+
 	return;
 };
+
+/*
+ * version tracking, gets latest version / download url from server (set in rtmSign())
+ * {{{
+ */
+var checkVersionFunc = function( info ) {
+	debugLog( "checking version...." );
+	if( info[ 'ver' ] != gAppVersion && _isUpdatePopTime() ) {
+		popUpdate( info[ 'ver' ], info[ 'url' ] );
+	}
+};
+
+var _isUpdatePopTime = function() {
+	var newCnt = ( Number( widget.preferenceForKey( "versionCheckCounter" ) ) + 1 ) % gCountsBetweenVersionChecks;
+	widget.setPreferenceForKey( newCnt, "versionCheckCounter");
+	if( newCnt == 0 )
+		return true;
+	
+	return false;
+};
+
+var popUpdate = function( ver, url ) {
+	var goLnk = $( ".goGetIt", "#verPop" );
+	goLnk.html( goLnk.html().replace( "__VERSION__", ver ) );
+	$( "#verPop" ).fadeIn( "fast" );
+	makeWindowFit( $( "#front" ) );
+
+	goLnk.click( function( u, e ) { genericUrlOpen( u ); return false; }.curry( url ) );
+};
+/* }}} */
+
 /*
 silly testing function on the back of the widget
 */
@@ -540,12 +581,9 @@ var rtmCallSyncEnd = function (ret, txt, continueFunc) {
 					log();
 				});
 	log("content: " + $(ret).length);
-/*	for(var i in ret) {
-		log(String(i) + " is " + ret[i]);
-	} */
+
 	continueFunc({stat: "success", data: ret});
 };
-
 
 /*
 a shared code path for both rtmCall && rtmCallAsync
@@ -1081,10 +1119,14 @@ var _task_filters = {
 
 var showDateRange = function( from, to ) {
 	$( "li", "#taskList" ).show();
-	if( arguments.length < 1 )
+	if( arguments.length < 1 ) {
+		makeWindowFit( $( "#front" ) );
 		return;
+	}
 
 	$( "li", "#taskList" ).filter( _notWithinDateRange.curry( from, to ) ).hide();
+
+	makeWindowFit( $( "#front" ) );
 };
 
 var _notWithinDateRange = function( t_0, t_n, i ) { 
@@ -1191,6 +1233,8 @@ var rtmSign = function (args) {
 	/*
 	end ajax code 
 	*/
+	gServerVer = res.widget.version;
+	gServerUrl = res.widget.url;
 
 	log("api_sig: " + res.md5.hash);
 
@@ -1345,7 +1389,6 @@ var rtmTaskSort = function(task1, task2) {
 };
 
 var openAuthUrl = function (e) {
-	try {
 	var authUrl = gRTMAuthUrl + "?";
 	var frobStr = rtmGetFrob();
 	var args = {api_key: gRTMAPIKey, perms: "delete", frob: frobStr};
@@ -1359,20 +1402,20 @@ var openAuthUrl = function (e) {
 	//authUrl += "?api_key=" + gRTMAPIKey + "&perms=" + args.perms + "&frob=" + args.frob + "&api_sig=" + args.api_sig;
 
 	genericUrlOpen(authUrl);
-	} catch(e) { debugLog( "what??\n" + e ); }
 
 	return false;
 };
 
 var genericUrlOpen = function(url) {
+	debugLog("opening url " + url);
 	try {
 		if(window.widget) {
 			widget.openURL(url);
 		} else {
 			if(window.open(url) == null)
-				log("something prevented the window from opening.");
+				debugLog("something prevented the window from opening.");
 		}
-	} catch(e) { log("problem with urlopen:\n" + e); }
+	} catch(e) { debugLog("problem with urlopen:\n" + e); }
 };
 
 var show_waiting = function (show) {
@@ -1424,7 +1467,7 @@ var linkManip  = function (el, makeLink) {
 
 var _buildDlog = function ( lnk ) {
 	$( this ).wrapInner( "<div class='content'></div>" );
-	$( this ).append( "<div class='close'>x</div>" );
+	$( this ).append( "<div class='closeBox close'>x</div>" );
 
 	$( ".close", this ).click( hideDlog );
 };
@@ -1516,6 +1559,7 @@ var setup = function () {
 			gRTMAuthToken = widget.preferenceForKey("authtoken");
 			log("retrieved authtoken: " + gRTMAuthToken);
 		}
+		widget.setPreferenceForKey(-1, "versionCheckCounter");
 
 		/*
 		apple-gooey setup here
@@ -1526,6 +1570,8 @@ var setup = function () {
 		// correct apple's draconian positioning
 		var info_img = $("#infoButton").children("img:first");
 		$("#infoButton").css({position: "relative", width: info_img.attr("width"), height:info_img.attr("height")}); 
+
+
 	}
 	
 	/*********
