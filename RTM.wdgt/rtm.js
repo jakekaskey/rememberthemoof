@@ -53,7 +53,8 @@ var gStatMsgs = { en : {
 			building_front : "Building interface",
 			getting_lists : "Getting lists",
 			getting_tasks : "Getting tasks",
-			build_tag_list : "Associating tags"
+			build_tag_list : "Associating tags",
+			vers_check : "Checking version"
 			} };
 /*
 miscellaneous
@@ -491,7 +492,7 @@ var buildFront = function () {
  * {{{
  */
 var checkVersionFunc = function( info ) {
-	debugLog( "checking version...." );
+	statMsg( "vers_check" );
 	if( info[ 'ver' ] != gAppVersion && _isUpdatePopTime() ) {
 		popUpdate( info[ 'ver' ], info[ 'url' ] );
 	}
@@ -1126,11 +1127,9 @@ var _task_filters = {
 	 * of the last day of the range
 	 */
 	none : function() { 
-		debugLog( "filter none" );
 		showDateRange();
 	},
 	month : function() { 
-		debugLog( "filter month" );
 		var now = new Date();
 		var startDate = new Date( now.getFullYear(), now.getMonth(), 1 );
 		var endDate = new Date( now.getFullYear(), now.getMonth() + 1, 1 );
@@ -1138,7 +1137,6 @@ var _task_filters = {
 		showDateRange( startDate, endDate );
 	},
 	week : function() { 
-		debugLog( "filter week" );
 		var now = new Date();
 
 		var startDate = new Date( now.getFullYear(), now.getMonth(), now.getDate() - now.getDay() );
@@ -1147,15 +1145,22 @@ var _task_filters = {
 		showDateRange( startDate, endDate );
 	},
 	today : function() { 
-		debugLog( "filter today" );
 		var now = new Date();
 		var startDate = new Date( now.getFullYear(), now.getMonth(), now.getDate() );
 		var endDate = new Date( now.getFullYear(), now.getMonth(), now.getDate() + 1 );
 		endDate.setMilliseconds( endDate.getMilliseconds() - 1 );
 		showDateRange( startDate, endDate );
+	},
+	no_date : function () {
+		showTasksNoDate();
 	}
 };
 
+var showTasksNoDate = function() {
+	$( "li", "#taskList" ).filter( function( i ) { return rtmNormalizeDateStr( $( this ).attr( "dueval" ) ) != "undefined"; } ).hide();
+	$( "li", "#taskList" ).filter( function( i ) { return rtmNormalizeDateStr( $( this ).attr( "dueval" ) ) == "undefined"; } ).show();
+	makeWindowFit( $( "#front" ) );
+};
 var showDateRange = function( from, to ) {
 	$( "li", "#taskList" ).show();
 	if( arguments.length < 1 ) {
