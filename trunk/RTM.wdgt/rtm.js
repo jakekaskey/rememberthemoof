@@ -863,6 +863,7 @@ var setupTaskPane = function (e) {
 		tags = par_li.children(".tags").html();
 
 		$(".extraInfo", "#taskPane").val(par_li.children(".task_chk").attr("id").replace("taskchk_", ""));
+
 		log("extraInfo: " + $(".extraInfo", "#taskPane").val());
 	}
 	/* 
@@ -893,6 +894,7 @@ var setupTaskPane = function (e) {
 		$(".taskList > label", "#taskPane").html("Add to:");
 		$("#taskSubmit", "#taskPane").click(addNewTask).val("Add task");
 		$("#taskSubmit", "#taskPane").attr("disabled", true);
+		$("#taskDelete", "#taskPane").hide();
 		$("#taskPane").slideDown(200, function() { makeWindowFit($("#front")); $(".taskName > input.user", "#taskPane").focus(); } );
 	} else {
 		$(".taskTags", "#taskPane").show();
@@ -901,6 +903,8 @@ var setupTaskPane = function (e) {
 		$(".taskList > label", "#taskPane").html("List:");
 		$("#taskSubmit", "#taskPane").click(updateTask).val("Update task");
 		$("#taskSubmit", "#taskPane").attr("disabled", false);
+		$("#taskDelete", "#taskPane").show();
+		$("#taskDelete", "#taskPane").click( deleteTask );
 		
 		$("#taskPane").show(200, function () { makeWindowFit($("#front")); $(".taskName > input.user", "#taskPane").focus(); } );
 	}
@@ -979,6 +983,24 @@ var addNewTask = function (e) {
 	rtmCallAsync("rtm.tasks.add", args, false, function(r, t) { log("task add returned with status " + t); hideTaskPane(); populateTasks(); } );
 };
 
+var deleteTask = function( e ) {
+	var extraInfo = $(".extraInfo", "#taskPane").val().split("_");
+	var attr = {
+		timeline: rtmTimeline(),
+		list_id: extraInfo[0],
+		taskseries_id: extraInfo[1],
+		task_id: extraInfo[2],
+		name: $(".taskName > input.user", "#taskPane").val()
+		};
+	rtmCallAsync("rtm.tasks.delete", attr, false, deleteTaskContinue);
+};
+var deleteTaskContinue = function(res) {
+	if (res.data.rsp.transaction.undoable == "1") {
+		prepUndo(res.data.rsp.transaction.id);
+	}
+	hideTaskPane();
+	populateTasks();
+};
 var updateTask = function (e) {
 	var extraInfo = $(".extraInfo", "#taskPane").val().split("_");
 	var attr;
@@ -1165,6 +1187,7 @@ var doUndo = function(e) {
 
 	var lastUndo = gUndoStack.pop();
 	window.clearTimeout(lastUndo[0]);
+
 	log("one undo cleared");
 
 	var args = {
