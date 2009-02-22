@@ -234,6 +234,8 @@ task list
 	opacity: .5;
 }
 
+.overDlog { z-index: 100;}
+
 #tagList {
 	margin: 0;
 }
