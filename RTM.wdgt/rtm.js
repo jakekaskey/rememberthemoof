@@ -249,6 +249,7 @@ var populateTasksContinue = function ( synchronized, tasks) {
 	$(".taskEdit").click(setupTaskPane);
 
 	makeWindowFit($("#front"));
+	hideStat();
 
 	if( synchronized && gGlobalSyncQueue.length > 0 )
 		gGlobalSyncQueue.shift()();
@@ -313,7 +314,7 @@ var refreshTagList = function (tags) {
 				log( "showing only tag --> " + gCurrentTag );
 				tagShowOnly( gCurrentTag );
 			}
-		
+	hideStat();
 	log("tag list refreshed");
 };
 
@@ -437,6 +438,8 @@ var populateListsContinue = function (synchronized, lists) {
 	show_waiting(false);
 	$("#listsSection").show();
 
+	hideStat();
+
 	if( synchronized && gGlobalSyncQueue.length > 0 )
 		gGlobalSyncQueue.shift()();
 };
@@ -481,7 +484,6 @@ var loadNewList = function (e) {
 
 var buildFront = function () {
 	if( checkHaveLocalFrob() ) {
-		statMsg( "building_front" );
 		log("building front");
 
 		// very, very crude synchronization
@@ -512,6 +514,7 @@ var checkVersionFunc = function( info ) {
 	if( info[ 'ver' ] != gAppVersion && _isUpdatePopTime() ) {
 		popUpdate( info[ 'ver' ], info[ 'url' ] );
 	}
+	hideStat();
 };
 
 var _isUpdatePopTime = function() {
@@ -1330,27 +1333,28 @@ var oldlog = function(s) {
 var statMsg = function( key ) {
 	_status( gStatMsgs[ gLang ][ key ] );
 };
+var hideStat = function() {
+	if( gStatusWinTimer != null )
+		window.clearTimeout( gStatusWinTimer );
+	gStatusWinTimer = window.setTimeout( _statusHide, 1000 );
+}
 
 var _status = function( msg, dofade ) {
-	if( gStatusWinTimer != null ) {
+	if( gStatusWinTimer != null )
 		window.clearTimeout( gStatusWinTimer );
-	}
 	$( ".content", "#statusLine" ).html( msg );
-	if( typeof( dofade ) == "boolean" && dofade == false ) return;
-	
-	gStatusWinTimer = window.setTimeout( _statusHide, 4000 );
 };
-
 var _statusHide = function() {
 	$( "#statusLine" ).fadeOut( 500 );
 	gStatusWinTimer = null;
 };
 
-var debugLog = function( msg ) {
-	/* ooo, boy... */
+/*var debugLog = function( msg ) {
+	// ooo, boy...
 	$( "#statusLine" ).show();
 	_status( msg );
-};
+};*/
+var debugLog = function( m ) { };
 
 var rtmNormalizeDateStr = function (datestr) {
 	if( typeof( datestr ) == "undefined" || datestr == "undefined" )
@@ -1594,7 +1598,6 @@ var setup = function () {
 	//log = _status;
 	
 	$( "#statusLine" ).show();
-	statMsg( "setting_up" );
 
 	log("entering setup");
 
@@ -1685,7 +1688,7 @@ var setup = function () {
 		/*
 		this stuff is all for debugging in a browser
 		*/
-		_status( "building test data" );
+		debugLog( "building test data" );
 		$(".hideOnLoad").show();
 		buildFront();
 		$("body").css("background-color", "#000044'");
@@ -1695,7 +1698,7 @@ var setup = function () {
 		$( "#taskSection > *" ).show();
 
 		_setupDebug();
-		_status( "done building test data" );
+		debugLog( "done building test data" );
 	}
 	
 	log("setup done");
