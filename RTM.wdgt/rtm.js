@@ -9,6 +9,8 @@ A Mac OS X Dashboard interface to Remember the Milk
 This code is released under both the MIT and GPL licenses.
 */
 
+const kNoListId = 0;
+
 /*
 global handles to some widget elements
 */
@@ -29,12 +31,13 @@ var gRTMSignPath = "sign/";
 var gRTMAuthToken;
 var gRTMUserId;
 var gRTMTimelineId = -1;
-var gCurrentList = 0;
+var gCurrentList = kNoListId;
 var gCurrentTag = null;
 var gUndoStack = [];  // [[timer_id, trans_id], ..]
 var gOverlays = [];
 
 var gStatusWinTimer = null;
+var gGlobalSyncQueue = [];  // *very* crude synchronization, for when we don't want functions stepping on each other's toes
 
 /*
 a counting semaphore, controlling progress where multiple asynchronous calls are concerned
@@ -145,7 +148,7 @@ methods to fill out the task list
 
 NOTE: this *sorely* needs refactoring...
 */
-var populateTasks = function () {
+var populateTasks = function ( synchronized ) {
 	statMsg( "getting_tasks" );
 	log("populating tasks");
 	show_waiting(true);
@@ -158,10 +161,10 @@ var populateTasks = function () {
 		call_args.list_id = String(list_id);
 
 //	var tasks = rtmCall("rtm.tasks.getList", arguments, true);
-	rtmCallAsync ("rtm.tasks.getList", call_args, true, populateTasksContinue);
+	rtmCallAsync ("rtm.tasks.getList", call_args, true, populateTasksContinue.curry( synchronized ) );
 };
 
-var populateTasksContinue = function (tasks) {
+var populateTasksContinue = function ( synchronized, tasks) {
 	if(tasks.stat == "failure" || $(tasks.data).children("rsp").children("tasks").length < 1)
 		return;
 	tasks = tasks.data;
@@ -246,6 +249,9 @@ var populateTasksContinue = function (tasks) {
 	$(".taskEdit").click(setupTaskPane);
 
 	makeWindowFit($("#front"));
+
+	if( synchronized && gGlobalSyncQueue.length > 0 )
+		gGlobalSyncQueue.shift()();
 //	$("#listid").html(tasks.list.id);
 	//log("taskList has " + $("#taskList").children("li").length + " children");
 };
@@ -396,7 +402,7 @@ var doTagPop = function (e) {
 /*
 start task list population
 */
-var populateLists = function () {
+var populateLists = function ( synchronized ) {
 	statMsg( "getting_lists" );
 	log("populating lists popup");
 	show_waiting(true);
@@ -405,10 +411,10 @@ var populateLists = function () {
 
 	addListItem(-1, {name: "All", id: "-1"});
 
-	rtmCallAsync("rtm.lists.getList", null, true, populateListsContinue);
+	rtmCallAsync("rtm.lists.getList", null, true, populateListsContinue.curry( synchronized ) );
 };
 
-var populateListsContinue = function (lists) {
+var populateListsContinue = function (synchronized, lists) {
 	if(lists.stat == "failure" || $(lists.data).children("rsp").children("lists").length < 1)
 		return;
 	log("raw data: " + String(lists.data));
@@ -419,13 +425,20 @@ var populateListsContinue = function (lists) {
 	lists.children("lists").children("list").each(addListItem);
 
 	for(var i = 0; i < $("#lists").get(0).options.length; i++) {
-		log("checking list " + $("#lists").get(0).options[i].id);
+		debugLog("checking list " + $("#lists").get(0).options[i].id + ", " + $( "#lists" ).get(0).options[i].innerHTML );
 		if(Number($("#lists").get(0).options[i].id.split("_")[1]) == gCurrentList)
 			$("#lists").get(0).selectedIndex = i;
+		else if ( gCurrentList == kNoListId && $( "#lists" ).get(0).options[i].innerHTML == "Inbox" ) {
+			gCurrentList = $( "#lists" ).get(0).options[i].id.split( "_" )[1];
+			$( "#lists" ).get(0).selectedIndex = i;
+		}
 	}
 	
 	show_waiting(false);
 	$("#listsSection").show();
+
+	if( synchronized && gGlobalSyncQueue.length > 0 )
+		gGlobalSyncQueue.shift()();
 };
 
 var addListItem = function (i, data) {
@@ -470,8 +483,11 @@ var buildFront = function () {
 	if( checkHaveLocalFrob() ) {
 		statMsg( "building_front" );
 		log("building front");
-		populateLists();
-		populateTasks();
+
+		// very, very crude synchronization
+		gGlobalSyncQueue.push( populateLists.curry( true ) );
+		gGlobalSyncQueue.push( populateTasks.curry( true ) ); 
+		gGlobalSyncQueue.shift()();
 
 		while(gUndoStack.length > 0) window.clearTimeout(gUndoStack.pop()[0]); // [[timer_id, trans_id], ..]
 
