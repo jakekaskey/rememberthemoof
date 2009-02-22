@@ -904,7 +904,7 @@ var setupTaskPane = function (e) {
 		$("#taskSubmit", "#taskPane").click(updateTask).val("Update task");
 		$("#taskSubmit", "#taskPane").attr("disabled", false);
 		$("#taskDelete", "#taskPane").show();
-		$("#taskDelete", "#taskPane").click( deleteTask );
+		$("#taskDelete", "#taskPane").click( deleteTaskConfirm );
 		
 		$("#taskPane").show(200, function () { makeWindowFit($("#front")); $(".taskName > input.user", "#taskPane").focus(); } );
 	}
@@ -983,6 +983,23 @@ var addNewTask = function (e) {
 	rtmCallAsync("rtm.tasks.add", args, false, function(r, t) { log("task add returned with status " + t); hideTaskPane(); populateTasks(); } );
 };
 
+var deleteTaskConfirm = function( e ) {
+	_popDeleteConfirm();
+
+	return false;
+};
+
+var _popDeleteConfirm = function() { 
+	var cnfrmDlog = $( "#confirmDlog" );
+	var dims = _absPos( $( "#taskPane" ).get(0) );
+	
+	cnfrmDlog.css( { "top" : dims.y, "left" : dims.x } );
+
+	$( ".noDont", cnfrmDlog ).click( function( e ) { $( "#confirmDlog" ).hide(); } );
+	$( ".yesPlz", cnfrmDlog ).click( function( e ) { $( "#confirmDlog" ).hide(); $( "#taskPane" ).hide(); deleteTask( e ); } );
+
+	cnfrmDlog.show();
+};
 var deleteTask = function( e ) {
 	var extraInfo = $(".extraInfo", "#taskPane").val().split("_");
 	var attr = {
@@ -1452,14 +1469,11 @@ var show_waiting = function (show) {
 manage single-spot overlay paradigm
 */
 var overlayHideAndSet = function(new_ol) {
-	if(gOverlays.length > 0) {
-		for(var i in gOverlays) {
-			var ol_name = gOverlays.shift();
-			log("hiding overlay " + ol_name);
-			$("#" + ol_name).hide();
-		}
-	}
-	gOverlays.push(new_ol);
+	$( ".dlog" ).each( function( i ) {
+			var dlog = $( this );
+			log("hiding overlay " + dlog.attr( 'id' ) );
+			dlog.hide();
+	} );
 };
 
 /*
