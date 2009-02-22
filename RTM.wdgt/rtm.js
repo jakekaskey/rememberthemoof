@@ -727,6 +727,13 @@ var checkHaveLocalFrob = function () {
 	return (widget.preferenceForKey("frob") != "undefined" && typeof(widget.preferenceForKey("frob")) != "undefined");
 };
 
+var deauthorize = function () {
+	if( !window.widget )
+		return false;
+	setupNewAuth();
+	hidePrefs();
+};
+
 
 /*
 attempt to retrieve a valid auth_token and store it in our prefs
@@ -1649,6 +1656,8 @@ var setup = function () {
 	
 	$("#lists").change(loadNewList);
 	$("#undoBtn").click(doUndo);
+
+	$( "#DEAUTH_BTN" ).click( deauthorize );
 
 	/*
 	taskPane setup -- we've generalized this!
