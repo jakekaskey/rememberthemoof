@@ -1,8 +1,0 @@
-Emu
-===
-* colorized priority
-* fixed resize issue when flipping front<->back
-* problem with "Tomorrow" showing up for any task due on first day of next month fixed
-* sort now places priority above date
-* better dialog handling
-* filters for date, tags
